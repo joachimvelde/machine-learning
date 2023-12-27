@@ -22,6 +22,9 @@ class Matrix {
         Matrix operator+ (const Matrix& x);
         Matrix operator- (const Matrix& x);
         Matrix operator* (const Matrix& x);
+
+        // Copy constructor
+        Matrix(const Matrix& x);
 };
 
 #endif

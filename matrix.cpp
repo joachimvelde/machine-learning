@@ -76,3 +76,8 @@ Matrix Matrix::operator* (const Matrix& x) {
     }
     return temp;
 }
+
+// Copy constructor
+Matrix::Matrix(const Matrix& x) : rows(x.rows), cols(x.cols), data(new float[rows * cols]) {
+    std::copy(x.data, x.data + (rows * cols), data);
+}
