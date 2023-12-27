@@ -15,6 +15,7 @@ class NeuralNetwork {
     public:
         NeuralNetwork(size_t arch[], size_t l, Matrix in, Matrix out);
         void print();
+        void forward();
 };
 
 NeuralNetwork::NeuralNetwork(size_t arch[], size_t layers, Matrix in, Matrix out) : layers(layers), train_out(out) {
@@ -24,6 +25,17 @@ NeuralNetwork::NeuralNetwork(size_t arch[], size_t layers, Matrix in, Matrix out
         ws.emplace_back(Matrix(arch[i - 1], arch[i]));
         bs.emplace_back(Matrix(as.at(i - 1).get_rows(), arch[i]));
         as.emplace_back(Matrix(as.at(i - 1).get_rows(), arch[i]));
+
+        ws[i - 1].fill(3.0f);
+        bs[i - 1].fill(5.0f);
+    }
+}
+
+void NeuralNetwork::forward() {
+    for (size_t i = 1; i < layers; i++) {
+        std::cout << "multiplying " << as[i - 1].get_rows() << "x" << as[i - 1].get_cols()
+            << " with " << ws[i - 1].get_rows() << "x" << ws[i - 1].get_cols() << std::endl;
+        as[i] = (as[i - 1] * ws[i - 1]) + bs[i - 1];
     }
 }
 
@@ -47,11 +59,18 @@ void NeuralNetwork::print() {
 int main()
 {
     Matrix in(3, 3);
-    Matrix out(10, 1);
+    Matrix out(2, 2);
+    in.fill(3.14f);
 
-    size_t arch[] = { 3, 3, 3 };
+    size_t arch[] = { 3, 4, 2 };
     NeuralNetwork nn(arch, 3, in, out);
 
+    // in.print();
+    // out.print();
+    // (in * out).print();
+
+    nn.print();
+    nn.forward();
     nn.print();
 
     return 0;

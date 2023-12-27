@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include <iostream>
+#include <assert.h>
 
 Matrix::Matrix(size_t r, size_t c) {
     rows = r;
@@ -41,7 +42,13 @@ size_t Matrix::get_rows() {
     return rows;
 }
 
+size_t Matrix::get_cols() {
+    return cols;
+}
+
 Matrix Matrix::operator+ (const Matrix& x) {
+    assert(rows == x.rows && cols == x.cols);
+
     Matrix temp(rows, cols);
     for (size_t i = 0; i < rows; i++) {
         for (size_t j = 0; j < cols; j++) {
@@ -53,6 +60,8 @@ Matrix Matrix::operator+ (const Matrix& x) {
 }
 
 Matrix Matrix::operator- (const Matrix& x) {
+    assert(rows == x.rows && cols == x.cols);
+
     Matrix temp(rows, cols);
     for (size_t i = 0; i < rows; i++) {
         for (size_t j = 0; j < cols; j++) {
@@ -64,9 +73,11 @@ Matrix Matrix::operator- (const Matrix& x) {
 }
 
 Matrix Matrix::operator* (const Matrix& x) {
-    Matrix temp(rows, cols);
+    assert(cols == x.rows);
+
+    Matrix temp(rows, x.cols);
     for (size_t i = 0; i < rows; i++) {
-        for (size_t j = 0; j < cols; j++) {
+        for (size_t j = 0; j < x.cols; j++) {
             temp.set(i, j, 0);
             for (size_t k = 0; k < cols; k++) {
                 float product = get(i, k) * x.get(k, j);
@@ -77,7 +88,22 @@ Matrix Matrix::operator* (const Matrix& x) {
     return temp;
 }
 
+Matrix Matrix::operator= (const Matrix& x) {
+    if (this != &x) {
+        float *new_data = new float[x.rows * x.cols];
+        std::copy(x.data, x.data + x.rows * x.cols, new_data);
+
+        delete[] data;
+
+        data = new_data;
+        rows = x.rows;
+        cols = x.cols;
+    }
+    return *this;
+}
+
 // Copy constructor
 Matrix::Matrix(const Matrix& x) : rows(x.rows), cols(x.cols), data(new float[rows * cols]) {
     std::copy(x.data, x.data + (rows * cols), data);
 }
+

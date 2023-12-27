@@ -18,10 +18,12 @@ class Matrix {
         void print();
 
         size_t get_rows();
+        size_t get_cols();
 
         Matrix operator+ (const Matrix& x);
         Matrix operator- (const Matrix& x);
         Matrix operator* (const Matrix& x);
+        Matrix operator= (const Matrix& x);
 
         // Copy constructor
         Matrix(const Matrix& x);
