@@ -7,6 +7,7 @@ class Matrix {
         float *data;
     public:
         Matrix(size_t r, size_t c);
+        virtual ~Matrix();
         float get(size_t r, size_t c) const;
         void set(size_t r, size_t c, float x);
         void fill(float x);
@@ -21,6 +22,10 @@ Matrix::Matrix(size_t r, size_t c) {
     rows = r;
     cols = c;
     data = new float[rows * cols];
+}
+
+Matrix::~Matrix() {
+    delete[] data;
 }
 
 float Matrix::get(size_t r, size_t c) const {
@@ -46,6 +51,7 @@ void Matrix::print() {
         }
         std::cout << '\n';
     }
+    std::cout << '\n';
 }
 
 Matrix Matrix::operator+ (const Matrix& x) {
@@ -85,12 +91,15 @@ Matrix Matrix::operator* (const Matrix& x) {
 }
 
 int main() {
-    Matrix x(2, 2);
-    Matrix y(2, 2);
+    Matrix x(3, 3);
+    Matrix y(3, 3);
 
-    x.fill(1);
-    y.fill(1);
+    x.fill(3);
+    y.fill(2);
     
+    std::cout << "Multiplying:\n";
+    x.print();
+    y.print();
     (x * y).print();
 
     return 0;
