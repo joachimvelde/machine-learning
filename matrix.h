@@ -17,6 +17,8 @@ class Matrix {
         void fill(float x);
         void print();
 
+        size_t get_rows();
+
         Matrix operator+ (const Matrix& x);
         Matrix operator- (const Matrix& x);
         Matrix operator* (const Matrix& x);
