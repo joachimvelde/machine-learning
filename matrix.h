@@ -15,6 +15,7 @@ class Matrix {
         float get(size_t r, size_t c) const;
         void set(size_t r, size_t c, float x);
         void fill(float x);
+        void rand();
         void print();
 
         size_t get_rows();
@@ -28,5 +29,7 @@ class Matrix {
         // Copy constructor
         Matrix(const Matrix& x);
 };
+
+float randf();
 
 #endif

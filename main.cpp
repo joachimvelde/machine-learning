@@ -26,8 +26,8 @@ NeuralNetwork::NeuralNetwork(size_t arch[], size_t layers, Matrix in, Matrix out
         bs.emplace_back(Matrix(as.at(i - 1).get_rows(), arch[i]));
         as.emplace_back(Matrix(as.at(i - 1).get_rows(), arch[i]));
 
-        ws[i - 1].fill(3.0f);
-        bs[i - 1].fill(5.0f);
+        ws[i - 1].rand();
+        bs[i - 1].rand();
     }
 }
 
@@ -58,6 +58,9 @@ void NeuralNetwork::print() {
 
 int main()
 {
+    // Generating random floats
+    srand(69);
+
     Matrix in(3, 3);
     Matrix out(2, 2);
     in.fill(3.14f);
@@ -71,6 +74,7 @@ int main()
 
     nn.print();
     nn.forward();
+    std::cout << std::endl << "---------- FOWARDING ----------" << std::endl << std::endl;
     nn.print();
 
     return 0;

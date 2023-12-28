@@ -28,6 +28,14 @@ void Matrix::fill(float x) {
     }
 }
 
+void Matrix::rand() {
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            set(i, j, randf());
+        }
+    }
+}
+
 void Matrix::print() {
     for (size_t i = 0; i < rows; i++) {
         for (size_t j = 0; j < cols; j++) {
@@ -107,3 +115,7 @@ Matrix::Matrix(const Matrix& x) : rows(x.rows), cols(x.cols), data(new float[row
     std::copy(x.data, x.data + (rows * cols), data);
 }
 
+float randf()
+{
+    return (float) (rand()) / (float) (RAND_MAX);
+}
