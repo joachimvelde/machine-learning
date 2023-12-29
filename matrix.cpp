@@ -80,6 +80,17 @@ Matrix Matrix::operator- (const Matrix& x) {
     return temp;
 }
 
+Matrix Matrix::operator* (float x) {
+    Matrix temp(rows, cols);
+
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            temp.set(i, j, get(i, j) * x);
+        }
+    }
+    return temp;
+}
+
 Matrix Matrix::operator* (const Matrix& x) {
     assert(cols == x.rows);
 

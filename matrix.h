@@ -23,6 +23,7 @@ class Matrix {
 
         Matrix operator+ (const Matrix& x);
         Matrix operator- (const Matrix& x);
+        Matrix operator* (float x);
         Matrix operator* (const Matrix& x);
         Matrix operator= (const Matrix& x);
 
