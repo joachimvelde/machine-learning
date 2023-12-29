@@ -37,5 +37,7 @@ class Matrix {
 };
 
 float randf();
+float sigmoidf(float x);
+float sigmoid_difff(float x);
 
 #endif

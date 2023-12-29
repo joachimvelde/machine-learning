@@ -42,8 +42,6 @@ NeuralNetwork::NeuralNetwork(size_t arch[], size_t layers, Matrix in, Matrix out
         bs[i - 1].rand();
         as[i].fill(0.0f); // just to make sure
 
-        // Create the gradient here
-
         rows = as[i].get_rows(); 
     }
 
@@ -71,8 +69,6 @@ float NeuralNetwork::cost() {
 }
 
 void NeuralNetwork::backprop() {
-    std::cout << "\nBackpropagating" << std::endl;
-
     forward();
 
     std::vector<Matrix> wd;
@@ -95,10 +91,9 @@ void NeuralNetwork::backprop() {
         }
     }
 
-    float learning_rate = 1.0f; // Should define this somewhere else
+    float learning_rate = 0.001f; // Should define this somewhere else
 
     for (size_t layer = 0; layer < layers - 1; layer++) {
-        std::cout << "layer number " << layer << std::endl;
         ws[layer] = ws[layer] - wd[layer] * learning_rate;
         bs[layer] = bs[layer] - bd[layer] * learning_rate;
     }
@@ -125,26 +120,26 @@ int main()
 {
     srand(69); // Seeding for pseudorandom numbers
 
-    Matrix in(4, 1); // This is fucked up, but we need one column
-    Matrix out(2, 1);
+    // Define the training data. The data should only have one column.
+    Matrix in(4, 1);
+    Matrix out(4, 1);
     in.fill(3.14f);
-    out.fill(2.7);
+    out.fill(0.5f);
 
-    size_t arch[] = { 4, 3, 2 };
+    // The input and output layers defined in arch have to match the in and out data.
+    size_t arch[] = { 4, 3, 4 };
     size_t layers = (size_t) (sizeof(arch) / sizeof(arch[0]));
     NeuralNetwork nn(arch, layers, in, out);
-
-    // nn.print();
-    // std::cout << std::endl << "cost = " << nn.cost() << std::endl;
-    // nn.forward();
-    // std::cout << std::endl << "---------- FOWARDING ----------" << std::endl << std::endl;
-    // nn.print();
-    // std::cout << std::endl << "cost = " << nn.cost() << std::endl;
 
     nn.forward();
     nn.print();
     std::cout << "cost = " << nn.cost() << std::endl;
-    nn.backprop();
+
+    std::cout << "---------- TRAINING ----------" << std::endl;
+    for (size_t i = 0; i < 10000; i++) {
+        nn.backprop();
+    }
+
     nn.print();
     std::cout << "cost = " << nn.cost() << std::endl;
 

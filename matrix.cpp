@@ -57,10 +57,6 @@ Matrix Matrix::transpose() {
     return temp;
 }
 
-float sigmoidf(float x) {
-    return 1 / (1 + exp(-x));
-}
-
 Matrix Matrix::sigmoid() {
     Matrix temp(rows, cols);
     for (size_t i = 0; i < rows; i++) {
@@ -69,11 +65,6 @@ Matrix Matrix::sigmoid() {
         }
     }
     return temp;
-}
-
-// Good job naming this
-float sigmoid_difff(float x) {
-    return x * (1 - x);
 }
 
 Matrix Matrix::sigmoid_diff() {
@@ -181,4 +172,13 @@ Matrix::Matrix(const Matrix& x) : rows(x.rows), cols(x.cols), data(new float[row
 float randf()
 {
     return (float) (rand()) / (float) (RAND_MAX);
+}
+
+float sigmoidf(float x) {
+    return 1 / (1 + exp(-x));
+}
+
+// Good job naming this
+float sigmoid_difff(float x) {
+    return x * (1 - x);
 }
