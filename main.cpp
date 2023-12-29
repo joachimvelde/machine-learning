@@ -53,12 +53,14 @@ NeuralNetwork::NeuralNetwork(size_t arch[], size_t layers, Matrix in, Matrix out
 void NeuralNetwork::forward() {
     for (size_t i = 1; i < layers; i++) {
         as[i] = (ws[i - 1] * as[i - 1]) + bs[i - 1];
+        as[i] = as[i].sigmoid();
     }
 }
 
 float NeuralNetwork::cost() {
-    float c = 0;
+    forward();
 
+    float c = 0;
     Matrix out = as.back();
 
     for (size_t i = 0; i < out.get_rows(); i++) {
@@ -69,21 +71,36 @@ float NeuralNetwork::cost() {
 }
 
 void NeuralNetwork::backprop() {
-    std::cout << "\nbackpropagating" << std::endl;
+    std::cout << "\nBackpropagating" << std::endl;
 
     forward();
 
-    std::cout << "as.back:" << std::endl;
-    as.back().print();
-    std::cout << "train_out:" << std::endl;
-    train_out.print();
+    std::vector<Matrix> wd;
+    std::vector<Matrix> bd;
+    for (size_t i = 0; i < ws.size(); i++) {
+        wd.push_back(Matrix(ws[i].get_rows(), ws[i].get_cols()));
+        bd.push_back(Matrix(bs[i].get_rows(), bs[i].get_cols()));
+    }
 
     Matrix delta_output = (as.back() - train_out) * 2;
 
-    for (int i = layers - 1; i >= 0; i--) {
-        delta_output.print();
-        as[i + 1].print();
-        Matrix delta_layer = delta_output * as[i + 1];
+    for (int layer = layers - 2; layer >= 0; layer--) {
+        Matrix delta_layer = delta_output.hadamard(as[layer + 1].sigmoid_diff());
+
+        wd[layer] = delta_layer * as[layer].transpose();
+        bd[layer] = delta_layer;
+
+        if (layer > 0) {
+            delta_output = ws[layer].transpose() * delta_layer;
+        }
+    }
+
+    float learning_rate = 1.0f; // Should define this somewhere else
+
+    for (size_t layer = 0; layer < layers - 1; layer++) {
+        std::cout << "layer number " << layer << std::endl;
+        ws[layer] = ws[layer] - wd[layer] * learning_rate;
+        bs[layer] = bs[layer] - bd[layer] * learning_rate;
     }
 }
 
@@ -117,14 +134,19 @@ int main()
     size_t layers = (size_t) (sizeof(arch) / sizeof(arch[0]));
     NeuralNetwork nn(arch, layers, in, out);
 
-    nn.print();
-    std::cout << std::endl << "cost = " << nn.cost() << std::endl;
-    nn.forward();
-    std::cout << std::endl << "---------- FOWARDING ----------" << std::endl << std::endl;
-    nn.print();
-    std::cout << std::endl << "cost = " << nn.cost() << std::endl;
+    // nn.print();
+    // std::cout << std::endl << "cost = " << nn.cost() << std::endl;
+    // nn.forward();
+    // std::cout << std::endl << "---------- FOWARDING ----------" << std::endl << std::endl;
+    // nn.print();
+    // std::cout << std::endl << "cost = " << nn.cost() << std::endl;
 
+    nn.forward();
+    nn.print();
+    std::cout << "cost = " << nn.cost() << std::endl;
     nn.backprop();
+    nn.print();
+    std::cout << "cost = " << nn.cost() << std::endl;
 
     return 0;
 }

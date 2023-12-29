@@ -1,6 +1,7 @@
 #include "matrix.h"
 #include <iostream>
 #include <assert.h>
+#include <cmath>
 
 Matrix::Matrix(size_t r, size_t c) {
     rows = r;
@@ -44,6 +45,57 @@ void Matrix::print() {
         std::cout << '\n';
     }
     std::cout << '\n';
+}
+
+Matrix Matrix::transpose() {
+    Matrix temp(cols, rows);
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            temp.set(j, i, get(i, j));
+        }
+    }
+    return temp;
+}
+
+float sigmoidf(float x) {
+    return 1 / (1 + exp(-x));
+}
+
+Matrix Matrix::sigmoid() {
+    Matrix temp(rows, cols);
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            temp.set(i, j, sigmoidf(get(i, j)));
+        }
+    }
+    return temp;
+}
+
+// Good job naming this
+float sigmoid_difff(float x) {
+    return x * (1 - x);
+}
+
+Matrix Matrix::sigmoid_diff() {
+    Matrix temp(rows, cols);
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            temp.set(i, j, sigmoid_difff(get(i, j)));
+        }
+    }
+    return temp;
+}
+
+Matrix Matrix::hadamard(const Matrix& x) {
+    assert(rows == x.rows && cols == x.cols);
+
+    Matrix temp(rows, cols);
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            temp.set(i, j, (get(i, j) * x.get(i, j)));
+        }
+    }
+    return temp;
 }
 
 size_t Matrix::get_rows() {

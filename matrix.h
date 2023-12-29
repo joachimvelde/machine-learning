@@ -18,6 +18,11 @@ class Matrix {
         void rand();
         void print();
 
+        Matrix transpose();
+        Matrix sigmoid();
+        Matrix sigmoid_diff();
+        Matrix hadamard(const Matrix& x);
+
         size_t get_rows();
         size_t get_cols();
 
