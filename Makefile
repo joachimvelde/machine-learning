@@ -1,9 +1,10 @@
 all: lamont
 
-lamont: matrix.h matrix.cpp main.cpp
-	g++ -c matrix.cpp
-	g++ -c main.cpp
-	g++ matrix.o main.o -o binary
+lamont: Matrix.h Matrix.cpp NeuralNetwork.h NeuralNetwork.cpp Main.cpp
+	g++ -c Matrix.cpp
+	g++ -c NeuralNetwork.cpp
+	g++ -c Main.cpp
+	g++ Matrix.o NeuralNetwork.o Main.o -o binary
 
 run: lamont
 	./binary
