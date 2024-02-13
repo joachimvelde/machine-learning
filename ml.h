@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <math.h>
+
+
+double sigmoid(double x);
+
 
 #define MAT_AT(m, i, j) m.data[m.cols * (j) + (i)]
 
@@ -14,9 +19,11 @@ typedef struct Matrix
 } Matrix;
 
 Matrix mat_alloc(size_t rows, size_t cols);
+void mat_copy(Matrix dst, Matrix src);
 void mat_fill(Matrix m, double x);
+void mat_flatten(Matrix *m);
 void mat_sum(Matrix dst, Matrix m);
-void mat_dot(Matrix dst, Matrix a, Matrix b);
+void mat_mult(Matrix dst, Matrix a, Matrix b);
 void mat_print(Matrix m);
 void mat_free(Matrix m);
 
@@ -29,21 +36,45 @@ typedef struct Network
 } Network;
 
 
+#define NET_IN(n) n.as[0]
+#define NET_OUT(n) n.as[(n.layer_count - 1)]
 
 // The layers array should specify the number of neurons in each layer
 Network net_alloc(size_t layer_count, size_t layers[]);
+void net_forward(Network n);
 void net_free(Network n);
 
 #endif // Ml_H_
 
 #ifndef ML_IMPLEMENTATION
 
+
+double sigmoid(double x)
+{
+    return 1.0 / (1.0 + exp(-x));
+}
+
+
+// A good few of these functions could be optimized by applying loop collapsing
+
 Matrix mat_alloc(size_t rows, size_t cols)
 {
     double *data = (double *) calloc(rows * cols, sizeof(double));
     assert(data != NULL);
-    Matrix m = { m.rows = rows, m.cols = cols, m.data = data };
+    Matrix m = { .rows = rows, .cols = cols, .data = data };
     return m;
+}
+
+void mat_copy(Matrix dst, Matrix src)
+{
+    assert(dst.rows == src.rows);
+    assert(dst.cols == src.cols);
+
+    for (size_t i = 0; i < src.rows; i++) {
+        for (size_t j = 0; j < src.cols; j++) {
+            MAT_AT(dst, i, j) = MAT_AT(src, i, j);
+        }
+    }
 }
 
 void mat_fill(Matrix m, double x)
@@ -53,6 +84,12 @@ void mat_fill(Matrix m, double x)
             MAT_AT(m, i, j) = x;
         }
     }
+}
+
+void mat_flatten(Matrix *m)
+{
+    m->rows = m->rows * m->cols;
+    m->cols = 1;
 }
 
 void mat_sum(Matrix dst, Matrix m)
@@ -68,7 +105,7 @@ void mat_sum(Matrix dst, Matrix m)
 }
 
 // Optimize this for cache hits
-void mat_dot(Matrix dst, Matrix a, Matrix b)
+void mat_mult(Matrix dst, Matrix a, Matrix b)
 {
     assert(a.cols == b.rows);
     assert(dst.rows == a.rows);
@@ -106,9 +143,9 @@ Network net_alloc(size_t layer_count, size_t layers[])
 {
     Network n;
     n.layer_count = layer_count;
-    n.ws = malloc(sizeof(*n.ws) * n.layer_count - 1);
-    n.bs = malloc(sizeof(*n.ws) * n.layer_count - 1);
-    n.as = malloc(sizeof(*n.ws) * n.layer_count);
+    n.ws = (Matrix *) malloc(sizeof(*n.ws) * n.layer_count - 1);
+    n.bs = (Matrix *) malloc(sizeof(*n.ws) * n.layer_count - 1);
+    n.as = (Matrix *) malloc(sizeof(*n.ws) * n.layer_count);
     assert(n.ws != NULL && n.bs != NULL && n.as != NULL);
 
     n.as[0] = mat_alloc(layers[0], 1); // Stick with flattened data for now
@@ -119,6 +156,15 @@ Network net_alloc(size_t layer_count, size_t layers[])
     }
 
     return n;
+}
+
+void net_forward(Network n)
+{
+    for (size_t i = 0; i < n.layer_count - 1; i++) {
+        mat_mult(n.as[i+1], n.ws[i], n.as[i]);
+        mat_sum(n.as[i+1], n.bs[i]);
+        // Apply activation to as[i+1]
+    }
 }
 
 void net_free(Network n)
