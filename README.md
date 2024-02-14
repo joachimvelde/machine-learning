@@ -5,3 +5,4 @@ Note for your idiot brain: Even if the input of a layer is stored as a vector, t
 Example: 5 inputs => triple neuron layer: 3x5 weight matrix and 3x1 bias vector.
 A = ø(W x I + b)
 
+Also, remember to seed srand!
