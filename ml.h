@@ -16,6 +16,7 @@ double sigmoid(double x);
 typedef struct Matrix
 {
     size_t rows, cols;
+    double loss;
     double *data;
 } Matrix;
 
@@ -45,7 +46,16 @@ typedef struct Network
 Network net_alloc(size_t layer_count, size_t layers[]);
 void net_forward(Network n);
 void net_free(Network n);
+double net_loss(Network n);
 void net_print(Network n);
+void net_train(Network n, Matrix in, Matrix out);
+/* Make a train-function that accepts the input and expected output.
+   This function will have to be called for every forward/backprop.
+
+   Later improvenemt: Accept the whole dataset at initialization, and have the
+   train-function train the network on the dataset a given number of times */
+
+// Set input data (train-function) -> forward -> calculate loss -> backprop
 
 #endif // Ml_H_
 
@@ -197,6 +207,7 @@ void net_free(Network n)
     free(n.as);
 }
 
+
 // For debugging
 void net_print(Network n)
 {
@@ -216,6 +227,17 @@ void net_print(Network n)
         printf("%zu x %zu\n", n.bs[i].rows, n.bs[i].cols);
     }
     printf("\n");
+}
+
+void net_train(Network n, Matrix in, Matrix out)
+{
+    // Set the input data
+
+    // call forward()
+
+    // calculate the loss
+
+    // call backprop()
 }
 
 #endif // ML_IMPLEMENTATION
