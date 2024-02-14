@@ -22,6 +22,7 @@ Matrix mat_alloc(size_t rows, size_t cols);
 void mat_copy(Matrix dst, Matrix src);
 void mat_fill(Matrix m, double x);
 void mat_flatten(Matrix *m);
+void mat_rand(Matrix m, double min, double max);
 void mat_sum(Matrix dst, Matrix m);
 void mat_mult(Matrix dst, Matrix a, Matrix b);
 void mat_print(Matrix m);
@@ -43,6 +44,7 @@ typedef struct Network
 Network net_alloc(size_t layer_count, size_t layers[]);
 void net_forward(Network n);
 void net_free(Network n);
+void net_print(Network n);
 
 #endif // Ml_H_
 
@@ -90,6 +92,15 @@ void mat_flatten(Matrix *m)
 {
     m->rows = m->rows * m->cols;
     m->cols = 1;
+}
+
+void mat_rand(Matrix m, double min, double max)
+{
+    for (size_t i = 0; i < m.rows; i++) {
+        for (size_t j = 0; j < m.cols; j++) {
+            MAT_AT(m, i, j) = min + (rand() / (RAND_MAX / (max - min))); // Maybe place in its own function
+        }
+    }
 }
 
 void mat_sum(Matrix dst, Matrix m)
@@ -148,11 +159,15 @@ Network net_alloc(size_t layer_count, size_t layers[])
     n.as = (Matrix *) malloc(sizeof(*n.ws) * n.layer_count);
     assert(n.ws != NULL && n.bs != NULL && n.as != NULL);
 
+    // Allocate and initialize architecture
     n.as[0] = mat_alloc(layers[0], 1); // Stick with flattened data for now
     for (size_t i = 1; i < n.layer_count; i++) {
-        n.ws[i] = mat_alloc(layers[i], layers[i-1]);
-        n.bs[i] = mat_alloc(layers[i], 1);
-        n.as[i] = mat_alloc(layers[i], layers[0]);
+        n.ws[i-1] = mat_alloc(layers[i], layers[i-1]);
+        n.bs[i-1] = mat_alloc(layers[i], 1);
+        n.as[i] = mat_alloc(layers[i], 1);
+
+        mat_rand(n.ws[i], 0.0, 1.0);
+        mat_rand(n.bs[i], 0.0, 1.0);
     }
 
     return n;
@@ -179,6 +194,27 @@ void net_free(Network n)
     free(n.ws);
     free(n.bs);
     free(n.as);
+}
+
+// For debugging
+void net_print(Network n)
+{
+    printf("Activations:\n");
+    for (size_t i = 0; i < n.layer_count; i++) {
+        printf("%zu x %zu\n", n.as[i].rows, n.as[i].cols);
+    }
+
+    printf("Weights:\n");
+    for (size_t i = 0; i < n.layer_count - 1; i++) {
+        printf("%zu x %zu\n", n.ws[i].rows, n.ws[i].cols);
+    }
+    printf("\n");
+
+    printf("Biases:\n");
+    for (size_t i = 0; i < n.layer_count - 1; i++) {
+        printf("%zu x %zu\n", n.bs[i].rows, n.bs[i].cols);
+    }
+    printf("\n");
 }
 
 #endif // ML_IMPLEMENTATION
