@@ -11,7 +11,7 @@
 double sigmoid(double x);
 
 
-#define MAT_AT(m, i, j) m.data[m.cols * (j) + (i)]
+#define MAT_AT(m, i, j) m.data[m.cols * (i) + (j)]
 
 typedef struct Matrix
 {
