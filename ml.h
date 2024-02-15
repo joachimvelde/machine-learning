@@ -177,8 +177,8 @@ Network net_alloc(size_t layer_count, size_t layers[])
         n.bs[i-1] = mat_alloc(layers[i], 1);
         n.as[i] = mat_alloc(layers[i], 1);
 
-        mat_rand(n.ws[i-1], 0.0, 1.0);
-        mat_rand(n.bs[i-1], 0.0, 1.0);
+        mat_rand(n.ws[i-1], -1.0, 1.0);
+        mat_rand(n.bs[i-1], -1.0, 1.0);
     }
 
     return n;
