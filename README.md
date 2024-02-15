@@ -6,3 +6,8 @@ Example: 5 inputs => triple neuron layer: 3x5 weight matrix and 3x1 bias vector.
 A = ø(W x I + b)
 
 Also, remember to seed srand!
+
+## Future optimizations:
+Use memcpy where relevant: mat_copy and mat_fill
+Apply loop fusion to most of the matrix loops - should be relatively easy
+Apply loop unrolling and/or unroll and jam
