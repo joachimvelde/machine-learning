@@ -25,6 +25,7 @@ void mat_copy(Matrix dst, Matrix src);
 void mat_fill(Matrix m, double x);
 void mat_flatten(Matrix *m);
 void mat_rand(Matrix m, double min, double max);
+void mat_sigmoid(Matrix m);
 void mat_sum(Matrix dst, Matrix m);
 void mat_mult(Matrix dst, Matrix a, Matrix b);
 void mat_print(Matrix m);
@@ -114,6 +115,13 @@ void mat_rand(Matrix m, double min, double max)
     }
 }
 
+void mat_sigmoid(Matrix m)
+{
+    for (size_t i = 0; i < m.rows * m.cols; i++) {
+        m.data[i] = sigmoid(m.data[i]);
+    }
+}
+
 void mat_sum(Matrix dst, Matrix m)
 {
     assert(dst.rows == m.rows);
@@ -165,8 +173,8 @@ Network net_alloc(size_t layer_count, size_t layers[])
 {
     Network n;
     n.layer_count = layer_count;
-    n.ws = (Matrix *) malloc(sizeof(*n.ws) * n.layer_count - 1);
-    n.bs = (Matrix *) malloc(sizeof(*n.ws) * n.layer_count - 1);
+    n.ws = (Matrix *) malloc(sizeof(*n.ws) * (n.layer_count - 1));
+    n.bs = (Matrix *) malloc(sizeof(*n.ws) * (n.layer_count - 1));
     n.as = (Matrix *) malloc(sizeof(*n.ws) * n.layer_count);
     assert(n.ws != NULL && n.bs != NULL && n.as != NULL);
 
@@ -189,7 +197,7 @@ void net_forward(Network n)
     for (size_t i = 0; i < n.layer_count - 1; i++) {
         mat_mult(n.as[i+1], n.ws[i], n.as[i]);
         mat_sum(n.as[i+1], n.bs[i]);
-        // Apply activation to as[i+1]
+        mat_sigmoid(n.as[i+1]);
     }
 }
 
