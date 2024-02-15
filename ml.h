@@ -48,7 +48,7 @@ void net_forward(Network n);
 void net_free(Network n);
 double net_loss(Network n);
 void net_print(Network n);
-void net_train(Network n, Matrix in, Matrix out);
+void net_train(Network n, Matrix in, Matrix target);
 /* Make a train-function that accepts the input and expected output.
    This function will have to be called for every forward/backprop.
 
@@ -229,7 +229,7 @@ void net_print(Network n)
     printf("\n");
 }
 
-void net_train(Network n, Matrix in, Matrix out)
+void net_train(Network n, Matrix in, Matrix target)
 {
     // Set the input data
 
