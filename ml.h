@@ -173,8 +173,8 @@ Network net_alloc(size_t layer_count, size_t layers[])
     Network n;
     n.layer_count = layer_count;
     n.ws = (Matrix *) malloc(sizeof(*n.ws) * (n.layer_count - 1));
-    n.bs = (Matrix *) malloc(sizeof(*n.ws) * (n.layer_count - 1));
-    n.as = (Matrix *) malloc(sizeof(*n.ws) * n.layer_count);
+    n.bs = (Matrix *) malloc(sizeof(*n.bs) * (n.layer_count - 1));
+    n.as = (Matrix *) malloc(sizeof(*n.as) * n.layer_count);
     assert(n.ws != NULL && n.bs != NULL && n.as != NULL);
 
     // Allocate and initialize architecture
@@ -252,6 +252,9 @@ void net_print(Network n)
 
 void net_train(Network n, Matrix in, Matrix target)
 {
+    assert(NET_IN(n).rows == in.rows);
+    assert(NET_OUT(n).rows == target.rows);
+
     // Set the input data
     mat_copy(NET_IN(n), in);
 

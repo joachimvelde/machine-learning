@@ -7,12 +7,13 @@ else
 endif
 
 CLFLAGS = -Wall -Wextra -std=c11
+LDFLAGS = -lm
 TARGET = main
 
 all: $(TARGET)
 
 $(TARGET): main.c ml.h
-	$(CC) $(CLFANG) -o $(TARGET) main.c
+	$(CC) $(CLFANG) -o $(TARGET) main.c $(LDFLAGS)
 
 run: $(TARGET)
 	./$(TARGET)
