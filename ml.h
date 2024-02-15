@@ -16,7 +16,6 @@ double sigmoid(double x);
 typedef struct Matrix
 {
     size_t rows, cols;
-    double loss;
     double *data;
 } Matrix;
 
@@ -47,7 +46,7 @@ typedef struct Network
 Network net_alloc(size_t layer_count, size_t layers[]);
 void net_forward(Network n);
 void net_free(Network n);
-double net_loss(Network n);
+double net_loss(Network n, Matrix target);
 void net_print(Network n);
 void net_train(Network n, Matrix in, Matrix target);
 /* Make a train-function that accepts the input and expected output.
@@ -205,8 +204,8 @@ void net_free(Network n)
 {
     mat_free(n.as[0]);
     for (size_t i = 1; i < n.layer_count; i++) {
-        mat_free(n.ws[i]);
-        mat_free(n.bs[i]);
+        mat_free(n.ws[i-1]);
+        mat_free(n.bs[i-1]);
         mat_free(n.as[i]);
     }
 
@@ -215,6 +214,20 @@ void net_free(Network n)
     free(n.as);
 }
 
+double net_loss(Network n, Matrix target)
+{
+    assert(NET_IN(n).rows == target.rows);
+    assert(NET_IN(n).cols == target.cols);
+
+    net_forward(n);
+
+    double l = 0;
+    for (size_t i = 0; i < NET_OUT(n).rows; i++) {
+        l += pow((MAT_AT(NET_IN(n), i, 0) - MAT_AT(NET_OUT(n), i, 0)), 2);
+    }
+
+    return l / NET_OUT(n).rows;
+}
 
 // For debugging
 void net_print(Network n)
@@ -240,12 +253,9 @@ void net_print(Network n)
 void net_train(Network n, Matrix in, Matrix target)
 {
     // Set the input data
+    mat_copy(NET_IN(n), in);
 
-    // call forward()
-
-    // calculate the loss
-
-    // call backprop()
+    // Call backprop()
 }
 
 #endif // ML_IMPLEMENTATION

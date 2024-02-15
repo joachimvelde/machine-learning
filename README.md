@@ -13,3 +13,5 @@ Use memcpy where relevant: mat_copy and mat_fill
 Apply loop fusion to most of the matrix loops - should be relatively easy
 
 Apply loop unrolling and/or unroll and jam
+
+Don't allocate and copy for the input vectors, just change the pointer at as[0]
