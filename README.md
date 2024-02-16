@@ -19,3 +19,6 @@ Don't allocate and copy for the input vectors, just change the pointer at as[0]
 ## Potential features/implementations:
 * Batch processing
 * GPU-acceleration
+
+## Bugs
+* Sometimes calling backprop a single time will actually make the loss greater. This could potentially be an issue with using too high of a learning rate, but I am not sure.
