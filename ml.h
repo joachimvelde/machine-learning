@@ -23,6 +23,7 @@ Matrix mat_alloc(size_t rows, size_t cols);
 void mat_copy(Matrix dst, Matrix src);
 void mat_fill(Matrix m, double x);
 void mat_flatten(Matrix *m);
+void mat_normalise(Matrix m); // Used to normalise the dataset
 void mat_rand(Matrix m, double min, double max);
 void mat_sigmoid(Matrix m);
 void mat_sum(Matrix dst, Matrix m);
@@ -30,12 +31,20 @@ void mat_mult(Matrix dst, Matrix a, Matrix b);
 void mat_print(Matrix m);
 void mat_free(Matrix m);
 
+typedef struct Gradient
+{
+    Matrix *ws;
+    Matrix *bs;
+    Matrix *as;
+} Gradient;
+
 typedef struct Network
 {
     size_t layer_count; // Should include the input layer
     Matrix *ws; // Weights
     Matrix *bs; // Biases
     Matrix *as; // Activations
+    Gradient g;
 } Network;
 
 
@@ -44,11 +53,14 @@ typedef struct Network
 
 // The layers array should specify the number of neurons in each layer
 Network net_alloc(size_t layer_count, size_t layers[]);
+void net_backprop(Network n);
 void net_forward(Network n);
 void net_free(Network n);
 double net_loss(Network n, Matrix target);
 void net_print(Network n);
 void net_train(Network n, Matrix in, Matrix target);
+void net_zero(Network n); // Used to zero out the gradient
+
 /* Make a train-function that accepts the input and expected output.
    This function will have to be called for every forward/backprop.
 
@@ -170,15 +182,26 @@ void mat_free(Matrix m)
 
 Network net_alloc(size_t layer_count, size_t layers[])
 {
+    Gradient g;
     Network n;
     n.layer_count = layer_count;
+    n.g = g;
+
+    // Allocate arrays for parameters
     n.ws = (Matrix *) malloc(sizeof(*n.ws) * (n.layer_count - 1));
     n.bs = (Matrix *) malloc(sizeof(*n.bs) * (n.layer_count - 1));
     n.as = (Matrix *) malloc(sizeof(*n.as) * n.layer_count);
     assert(n.ws != NULL && n.bs != NULL && n.as != NULL);
 
+    // Allocate arrays for the gradient
+    n.g.ws = (Matrix *) malloc(sizeof(*n.g.ws) * (n.layer_count - 1));
+    n.g.bs = (Matrix *) malloc(sizeof(*n.g.bs) * (n.layer_count - 1));
+    n.g.as = (Matrix *) malloc(sizeof(*n.g.as) * n.layer_count);
+    assert(n.g.ws != NULL && n.g.bs != NULL && n.g.as != NULL);
+
     // Allocate and initialize architecture
     n.as[0] = mat_alloc(layers[0], 1); // Stick with flattened data for now
+    n.g.as[0] = mat_alloc(layers[0], 1); // Stick with flattened data for now
     for (size_t i = 1; i < n.layer_count; i++) {
         n.ws[i-1] = mat_alloc(layers[i], layers[i-1]);
         n.bs[i-1] = mat_alloc(layers[i], 1);
@@ -186,9 +209,18 @@ Network net_alloc(size_t layer_count, size_t layers[])
 
         mat_rand(n.ws[i-1], -1.0, 1.0);
         mat_rand(n.bs[i-1], -1.0, 1.0);
+
+        n.g.ws[i-1] = mat_alloc(layers[i], layers[i-1]);
+        n.g.bs[i-1] = mat_alloc(layers[i], 1);
+        n.g.as[i] = mat_alloc(layers[i], 1);
     }
 
     return n;
+}
+
+void net_backprop(Network n)
+{
+    // Iterate backwards
 }
 
 void net_forward(Network n)
@@ -203,15 +235,24 @@ void net_forward(Network n)
 void net_free(Network n)
 {
     mat_free(n.as[0]);
+    mat_free(n.g.as[0]);
     for (size_t i = 1; i < n.layer_count; i++) {
         mat_free(n.ws[i-1]);
         mat_free(n.bs[i-1]);
         mat_free(n.as[i]);
+
+        mat_free(n.g.ws[i-1]);
+        mat_free(n.g.bs[i-1]);
+        mat_free(n.g.as[i]);
     }
 
     free(n.ws);
     free(n.bs);
     free(n.as);
+
+    free(n.g.ws);
+    free(n.g.bs);
+    free(n.g.as);
 }
 
 double net_loss(Network n, Matrix target)
@@ -223,7 +264,7 @@ double net_loss(Network n, Matrix target)
 
     double l = 0;
     for (size_t i = 0; i < NET_OUT(n).rows; i++) {
-        l += pow((MAT_AT(NET_IN(n), i, 0) - MAT_AT(NET_OUT(n), i, 0)), 2);
+        l += pow((MAT_AT(NET_OUT(n), i, 0)) - MAT_AT(target, i, 0), 2);
     }
 
     return l / NET_OUT(n).rows;
