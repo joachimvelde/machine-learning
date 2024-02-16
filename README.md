@@ -7,6 +7,9 @@ A = ø(W x I + b)
 
 Also, remember to seed srand!
 
+## TODO:
+* Add bias to backprop
+
 ## Future optimizations:
 Use memcpy where relevant: mat_copy and mat_fill
 
@@ -22,3 +25,4 @@ Don't allocate and copy for the input vectors, just change the pointer at as[0]
 
 ## Bugs
 * Sometimes calling backprop a single time will actually make the loss greater. This could potentially be an issue with using too high of a learning rate, but I am not sure.
+Maybe this is because I have not yet added the bias gradient to the backprop-function.
