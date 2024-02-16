@@ -321,6 +321,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
         mat_free(wt);
         mat_free(one_minus_o);
 
+        // Oopsie, does this compute the gradient for the output layer? check loop index
         // Finalize gradients and scale by learning rate;
         Matrix at = mat_transpose(n.as[i]);
 
