@@ -1,4 +1,4 @@
-ifeq ($(shell uname),Darwin)
+ifeq ($(shell uname), Darwin)
 	CC = clang
 	LEAK_CHECK = leaks --atExit --
 else
@@ -6,14 +6,18 @@ else
 	LEAK_CHECK = valgrind
 endif
 
-CLFLAGS = -Wall -Wextra -std=c11
+CFLAGS = -Wall -Wextra -std=c11
 LDFLAGS = -lm
 TARGET = main
+OBJ = main.o
 
 all: $(TARGET)
 
-$(TARGET): main.c ml.h
-	$(CC) $(CLFANG) -o $(TARGET) main.c $(LDFLAGS)
+$(OBJ): main.c ml.h
+	$(CC) $(CFLAGS) -c -o $(OBJ) main.c
+
+$(TARGET): $(OBJ)
+	$(CC) -o $(TARGET) $(OBJ) $(LDFLAGS)
 
 run: $(TARGET)
 	./$(TARGET)
@@ -22,4 +26,4 @@ leaks: $(TARGET)
 	$(LEAK_CHECK) ./$(TARGET)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(OBJ)
