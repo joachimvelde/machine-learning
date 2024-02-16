@@ -72,8 +72,6 @@ void net_zero_gradient(Network n);
    Later improvenemt: Accept the whole dataset at initialization, and have the
    train-function train the network on the dataset a given number of times */
 
-// Set input data (train-function) -> forward -> calculate loss -> backprop
-
 #endif // Ml_H_
 
 #ifndef ML_IMPLEMENTATION
@@ -323,11 +321,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
         mat_free(wt);
         mat_free(one_minus_o);
 
-    }
-
-    // Does this need to be in its own loop?
-    // Finalize gradients and scale by learning rate;
-    for (int i = n.layer_count - 2; i >= 0; i--) {
+        // Finalize gradients and scale by learning rate;
         Matrix at = mat_transpose(n.as[i]);
 
         // printf("MULT ON %zu x %zu and %zu x %zu into %zu x %zu\n",
