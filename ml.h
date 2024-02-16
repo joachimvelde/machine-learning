@@ -305,6 +305,12 @@ void net_backprop(Network n, Matrix target, double learning_rate)
     mat_hadamard(deltas, deltas, one_minus_o);
     mat_free(one_minus_o);
 
+    // Gradient for the output layer
+    Matrix at = mat_transpose(n.as[n.layer_count - 2]);
+    mat_mult(n.g.ws[n.layer_count - 2], n.g.ds[n.layer_count - 1], at);
+    mat_scale(n.g.ws[n.layer_count - 2], learning_rate);
+    mat_free(at);
+
     // Iterate backwards through each layer to calculate deltas
     for (int i = n.layer_count - 3; i >= 0; i--) {
         // delta = sum_l_in_L(w_jl * delta_l) * o_j * (1 - o_j)
@@ -321,7 +327,6 @@ void net_backprop(Network n, Matrix target, double learning_rate)
         mat_free(wt);
         mat_free(one_minus_o);
 
-        // Oopsie, does this compute the gradient for the output layer? check loop index
         // Finalize gradients and scale by learning rate;
         Matrix at = mat_transpose(n.as[i]);
 
@@ -333,7 +338,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
         mat_scale(n.g.ws[i], learning_rate);
 
         mat_free(at);
-    }
+    } 
 
     // Update parameters
     for (size_t i = 0; i < n.layer_count - 1; i++) {
