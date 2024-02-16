@@ -325,6 +325,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
 
     }
 
+    // Does this need to be in its own loop?
     // Finalize gradients and scale by learning rate;
     for (int i = n.layer_count - 2; i >= 0; i--) {
         Matrix at = mat_transpose(n.as[i]);
