@@ -23,9 +23,14 @@ Matrix mat_alloc(size_t rows, size_t cols);
 void mat_copy(Matrix dst, Matrix src);
 void mat_fill(Matrix m, double x);
 void mat_flatten(Matrix *m);
+void mat_hadamard(Matrix dst, Matrix a, Matrix b);
 void mat_normalise(Matrix m); // Used to normalise the dataset
+Matrix mat_transpose(Matrix m);
 void mat_rand(Matrix m, double min, double max);
+void mat_scale(Matrix m, double x);
 void mat_sigmoid(Matrix m);
+void mat_sub(Matrix dst, Matrix m);
+Matrix mat_sub_from_f(double x, Matrix m); // Allocates a new matrix with values x - m
 void mat_sum(Matrix dst, Matrix m);
 void mat_mult(Matrix dst, Matrix a, Matrix b);
 void mat_print(Matrix m);
@@ -117,6 +122,35 @@ void mat_flatten(Matrix *m)
     m->cols = 1;
 }
 
+void mat_hadamard(Matrix dst, Matrix a, Matrix b)
+{
+    assert(dst.rows == a.rows);
+    assert(dst.rows == b.rows);
+    assert(a.rows == b.rows);
+    assert(dst.cols == a.cols);
+    assert(dst.cols == b.cols);
+    assert(a.cols == b.cols);
+
+    for (size_t i = 0; i < dst.rows; i++) {
+        for (size_t j = 0; j < dst.cols; j++) {
+            MAT_AT(dst, i, j) = MAT_AT(a, i, j) * MAT_AT(b, i, j);
+        }
+    }
+}
+
+Matrix mat_transpose(Matrix m)
+{
+    Matrix new = mat_alloc(m.cols, m.rows);
+    
+    for (size_t i = 0; i < m.rows; i++) {
+        for (size_t j = 0; j < m.cols; j++) {
+            MAT_AT(new, j, i) = MAT_AT(m, i, j);
+        }
+    }
+
+    return new;
+}
+
 void mat_rand(Matrix m, double min, double max)
 {
     for (size_t i = 0; i < m.rows; i++) {
@@ -126,11 +160,45 @@ void mat_rand(Matrix m, double min, double max)
     }
 }
 
+void mat_scale(Matrix m, double x)
+{
+    for (size_t i = 0; i < m.rows; i++) {
+        for (size_t j = 0; j < m.cols; j++) {
+            MAT_AT(m, i, j) *= x;
+        }
+    }
+}
+
 void mat_sigmoid(Matrix m)
 {
     for (size_t i = 0; i < m.rows * m.cols; i++) {
         m.data[i] = sigmoid(m.data[i]);
     }
+}
+
+void mat_sub(Matrix dst, Matrix m)
+{
+    assert(dst.rows == m.rows);
+    assert(dst.cols == m.cols);
+
+    for (size_t i = 0; i < dst.rows; i++) {
+        for (size_t j = 0; j < dst.cols; j++) {
+            MAT_AT(dst, i, j) -= MAT_AT(m, i, j);
+        }
+    }
+}
+
+Matrix mat_sub_from_f(double x, Matrix m)
+{
+    Matrix new = mat_alloc(m.rows, m.cols);
+
+    for (size_t i = 0; i < m.rows; i++) {
+        for (size_t j = 0; j < m.cols; j++) {
+            MAT_AT(new, i, j) = x - MAT_AT(m, i, j);
+        }
+    }
+
+    return new;
 }
 
 void mat_sum(Matrix dst, Matrix m)
@@ -216,56 +284,64 @@ Network net_alloc(size_t layer_count, size_t layers[])
     return n;
 }
 
-// This can be made a lot simpler with some matrix operations
+// Check the wikipedia page for backpropagation for further explanation
 void net_backprop(Network n, Matrix target, double learning_rate)
 {
-    Matrix y = NET_OUT(n);
+    // Remember that the first matrix in n.as and g.ds is the input layer
+    // This should probably be removed for g.ds, but we will do that later.
+    // This means the current activation matrix at an index is as[i+1], not as[i].
 
-    // Zero out the gradient - might not need this
+    Matrix o = NET_OUT(n);
+
+    // Zero out the gradient
     net_zero_gradient(n);
 
-    // Iterate backwards - remember n.as[i+1]
+    // Calculate the deltas for the output neuros first
+    // delta = (o_j - t_j) * o_j * (1 - o_j)
+    Matrix deltas = n.g.ds[n.layer_count - 1];
+    Matrix one_minus_o = mat_sub_from_f(1, o);
+
+    mat_copy(deltas, o);
+    mat_sub(deltas, target);
+    mat_hadamard(deltas, deltas, o);
+    mat_hadamard(deltas, deltas, one_minus_o);
+    mat_free(one_minus_o);
+
+    // Iterate backwards through each layer to calculate deltas
+    for (int i = n.layer_count - 3; i >= 0; i--) {
+        // delta = sum_l_in_L(w_jl * delta_l) * o_j * (1 - o_j)
+        Matrix wt = mat_transpose(n.ws[i+1]);
+        Matrix one_minus_o = mat_sub_from_f(1, n.as[i+1]);
+
+        Matrix delta_next = n.g.ds[i+2]; // Delta from next layer
+        deltas = n.g.ds[i+1];
+
+        mat_mult(deltas, wt, delta_next);
+        mat_hadamard(deltas, deltas, n.as[i+1]);
+        mat_hadamard(deltas, deltas, one_minus_o);
+
+        mat_free(wt);
+        mat_free(one_minus_o);
+
+    }
+
+    // Finalize gradients and scale by learning rate;
     for (int i = n.layer_count - 2; i >= 0; i--) {
-        // deltas are stored in n.g.ds
+        Matrix at = mat_transpose(n.as[i]);
 
-        // For each neuron in the layer
-        for (size_t j = 0; j < n.as[i+1].rows; j++) {
-            double delta = 0.0;
-            double o = 0.0;
+        // printf("MULT ON %zu x %zu and %zu x %zu into %zu x %zu\n",
+        //        at.rows, at.cols, n.g.ds[i+1].rows, n.g.ds[i+1].cols,
+        //        n.g.ws[i].rows, n.g.ws[i].cols);
 
-            // For the output layer
-            if (i == (int) n.layer_count - 2) {
-                double t = MAT_AT(target, j, 0);
-                o = MAT_AT(y, j, 0);
-                delta = (o - t) * o * (1 - o);
-            } else { // For the hidden layers
-                // For each neuron in the next layer
-                for (size_t k = 0; k < n.as[i+2].rows; k++) {
-                    double w = MAT_AT(n.ws[i+1], j, k);
-                    double delta_k = MAT_AT(n.g.ds[i+2], k, 0); // Delta value from next layer
-                    delta += w * delta_k;
-                }
-                o = MAT_AT(n.as[i+1], j, 0);
-                delta *= o * (1 - o);
-            }
+        mat_mult(n.g.ws[i], n.g.ds[i+1], at);
+        mat_scale(n.g.ws[i], learning_rate);
 
-            MAT_AT(n.g.ds[i+1], j, 0) = delta; // Set delta value for this layer
-
-            // Update gradient for weights connecting to this neuron
-            for (size_t k = 0; k < n.as[i].rows; k++) {
-                o = MAT_AT(n.as[i], k, 0);
-                MAT_AT(n.g.ws[i], j, k) = o * delta;
-            }
-        }
+        mat_free(at);
     }
 
     // Update parameters
-    for (size_t i = 0; i < n.layer_count; i++) {
-        for (size_t j = 0; j < n.ws[i].rows; j++) {
-            for (size_t k = 0; k < n.ws[i].cols; k++) {
-                MAT_AT(n.ws[i], j, k) -= MAT_AT(n.g.ws[i], j, k) * learning_rate;
-            }
-        }
+    for (size_t i = 0; i < n.layer_count - 1; i++) {
+        mat_sub(n.ws[i], n.g.ws[i]);
     }
 }
 
