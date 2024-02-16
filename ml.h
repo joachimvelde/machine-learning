@@ -216,10 +216,7 @@ Network net_alloc(size_t layer_count, size_t layers[])
     return n;
 }
 
-/*
-  Each neuron computes the function a = sig(z) = sig(W * x + b) for every input,
-  which gives the derivative sig(z)(1 - sig(z)).
-*/
+// This can be made a lot simpler with some matrix operations
 void net_backprop(Network n, Matrix target, double learning_rate)
 {
     Matrix y = NET_OUT(n);
@@ -229,7 +226,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
 
     // Iterate backwards - remember n.as[i+1]
     for (int i = n.layer_count - 2; i >= 0; i--) {
-        double delta_layer[n.as[i+1].rows]; // Might want to store this in n.g.as
+        // deltas are stored in n.g.as
 
         // For each neuron in the layer
         for (size_t j = 0; j < n.as[i+1].rows; j++) {
@@ -245,14 +242,14 @@ void net_backprop(Network n, Matrix target, double learning_rate)
                 // For each neuron in the next layer
                 for (size_t k = 0; k < n.as[i+2].rows; k++) {
                     double w = MAT_AT(n.ws[i+1], j, k);
-                    double delta_k = delta_layer[k]; // Delta value from next layer
+                    double delta_k = MAT_AT(n.g.as[i+2], k, 0); // Delta value from next layer
                     delta += w * delta_k;
                 }
                 o = MAT_AT(n.as[i+1], j, 0);
                 delta *= o * (1 - o);
             }
 
-            delta_layer[j] = delta;
+            MAT_AT(n.g.as[i+1], j, 0) = delta; // Set delta value for this layer
 
             // Update gradient for weights connecting to this neuron
             for (size_t k = 0; k < n.as[i].rows; k++) {
