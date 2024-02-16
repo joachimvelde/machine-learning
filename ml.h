@@ -35,7 +35,7 @@ typedef struct Gradient
 {
     Matrix *ws;
     Matrix *bs;
-    Matrix *as;
+    Matrix *ds; // Deltas
 } Gradient;
 
 typedef struct Network
@@ -194,12 +194,12 @@ Network net_alloc(size_t layer_count, size_t layers[])
     // Allocate arrays for the gradient
     n.g.ws = (Matrix *) malloc(sizeof(*n.g.ws) * (n.layer_count - 1));
     n.g.bs = (Matrix *) malloc(sizeof(*n.g.bs) * (n.layer_count - 1));
-    n.g.as = (Matrix *) malloc(sizeof(*n.g.as) * n.layer_count);
-    assert(n.g.ws != NULL && n.g.bs != NULL && n.g.as != NULL);
+    n.g.ds = (Matrix *) malloc(sizeof(*n.g.ds) * n.layer_count);
+    assert(n.g.ws != NULL && n.g.bs != NULL && n.g.ds != NULL);
 
     // Allocate and initialize architecture
     n.as[0] = mat_alloc(layers[0], 1); // Stick with flattened data for now
-    n.g.as[0] = mat_alloc(layers[0], 1); // Stick with flattened data for now
+    n.g.ds[0] = mat_alloc(layers[0], 1); // Stick with flattened data for now
     for (size_t i = 1; i < n.layer_count; i++) {
         n.ws[i-1] = mat_alloc(layers[i], layers[i-1]);
         n.bs[i-1] = mat_alloc(layers[i], 1);
@@ -210,7 +210,7 @@ Network net_alloc(size_t layer_count, size_t layers[])
 
         n.g.ws[i-1] = mat_alloc(layers[i], layers[i-1]);
         n.g.bs[i-1] = mat_alloc(layers[i], 1);
-        n.g.as[i] = mat_alloc(layers[i], 1);
+        n.g.ds[i] = mat_alloc(layers[i], 1);
     }
 
     return n;
@@ -226,7 +226,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
 
     // Iterate backwards - remember n.as[i+1]
     for (int i = n.layer_count - 2; i >= 0; i--) {
-        // deltas are stored in n.g.as
+        // deltas are stored in n.g.ds
 
         // For each neuron in the layer
         for (size_t j = 0; j < n.as[i+1].rows; j++) {
@@ -242,14 +242,14 @@ void net_backprop(Network n, Matrix target, double learning_rate)
                 // For each neuron in the next layer
                 for (size_t k = 0; k < n.as[i+2].rows; k++) {
                     double w = MAT_AT(n.ws[i+1], j, k);
-                    double delta_k = MAT_AT(n.g.as[i+2], k, 0); // Delta value from next layer
+                    double delta_k = MAT_AT(n.g.ds[i+2], k, 0); // Delta value from next layer
                     delta += w * delta_k;
                 }
                 o = MAT_AT(n.as[i+1], j, 0);
                 delta *= o * (1 - o);
             }
 
-            MAT_AT(n.g.as[i+1], j, 0) = delta; // Set delta value for this layer
+            MAT_AT(n.g.ds[i+1], j, 0) = delta; // Set delta value for this layer
 
             // Update gradient for weights connecting to this neuron
             for (size_t k = 0; k < n.as[i].rows; k++) {
@@ -281,7 +281,7 @@ void net_forward(Network n)
 void net_free(Network n)
 {
     mat_free(n.as[0]);
-    mat_free(n.g.as[0]);
+    mat_free(n.g.ds[0]);
     for (size_t i = 1; i < n.layer_count; i++) {
         mat_free(n.ws[i-1]);
         mat_free(n.bs[i-1]);
@@ -289,7 +289,7 @@ void net_free(Network n)
 
         mat_free(n.g.ws[i-1]);
         mat_free(n.g.bs[i-1]);
-        mat_free(n.g.as[i]);
+        mat_free(n.g.ds[i]);
     }
 
     free(n.ws);
@@ -298,7 +298,7 @@ void net_free(Network n)
 
     free(n.g.ws);
     free(n.g.bs);
-    free(n.g.as);
+    free(n.g.ds);
 }
 
 double net_loss(Network n, Matrix target)
@@ -357,9 +357,9 @@ void net_zero_gradient(Network n)
     for (size_t i = 0; i < n.layer_count - 1; i++) {
         mat_fill(n.g.ws[i], 0.0);
         mat_fill(n.g.bs[i], 0.0);
-        mat_fill(n.g.as[i], 0.0);
+        mat_fill(n.g.ds[i], 0.0);
     }
-    mat_fill(n.g.as[n.layer_count - 1], 0.0);
+    mat_fill(n.g.ds[n.layer_count - 1], 0.0);
 }
 
 #endif // ML_IMPLEMENTATION
