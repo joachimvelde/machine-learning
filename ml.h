@@ -53,13 +53,13 @@ typedef struct Network
 
 // The layers array should specify the number of neurons in each layer
 Network net_alloc(size_t layer_count, size_t layers[]);
-void net_backprop(Network n);
+void net_backprop(Network n, Matrix target, double learning_rate);
 void net_forward(Network n);
 void net_free(Network n);
 double net_loss(Network n, Matrix target);
 void net_print(Network n);
-void net_train(Network n, Matrix in, Matrix target);
-void net_zero(Network n); // Used to zero out the gradient
+void net_train(Network n, Matrix in, Matrix target, double learning_rate);
+void net_zero_gradient(Network n);
 
 /* Make a train-function that accepts the input and expected output.
    This function will have to be called for every forward/backprop.
@@ -182,10 +182,8 @@ void mat_free(Matrix m)
 
 Network net_alloc(size_t layer_count, size_t layers[])
 {
-    Gradient g;
     Network n;
     n.layer_count = layer_count;
-    n.g = g;
 
     // Allocate arrays for parameters
     n.ws = (Matrix *) malloc(sizeof(*n.ws) * (n.layer_count - 1));
@@ -218,9 +216,60 @@ Network net_alloc(size_t layer_count, size_t layers[])
     return n;
 }
 
-void net_backprop(Network n)
+/*
+  Each neuron computes the function a = sig(z) = sig(W * x + b) for every input,
+  which gives the derivative sig(z)(1 - sig(z)).
+*/
+void net_backprop(Network n, Matrix target, double learning_rate)
 {
-    // Iterate backwards
+    Matrix y = NET_OUT(n);
+
+    // Zero out the gradient - might not need this
+    net_zero_gradient(n);
+
+    // Iterate backwards - remember n.as[i+1]
+    for (int i = n.layer_count - 2; i >= 0; i--) {
+        double delta_layer[n.as[i+1].rows]; // Might want to store this in n.g.as
+
+        // For each neuron in the layer
+        for (size_t j = 0; j < n.as[i+1].rows; j++) {
+            double delta = 0.0;
+            double o = 0.0;
+
+            // For the output layer
+            if (i == (int) n.layer_count - 2) {
+                double t = MAT_AT(target, j, 0);
+                o = MAT_AT(y, j, 0);
+                delta = (o - t) * o * (1 - o);
+            } else { // For the hidden layers
+                // For each neuron in the next layer
+                for (size_t k = 0; k < n.as[i+2].rows; k++) {
+                    double w = MAT_AT(n.ws[i+1], j, k);
+                    double delta_k = delta_layer[k]; // Delta value from next layer
+                    delta += w * delta_k;
+                }
+                o = MAT_AT(n.as[i+1], j, 0);
+                delta *= o * (1 - o);
+            }
+
+            delta_layer[j] = delta;
+
+            // Update gradient for weights connecting to this neuron
+            for (size_t k = 0; k < n.as[i].rows; k++) {
+                o = MAT_AT(n.as[i], k, 0);
+                MAT_AT(n.g.ws[i], j, k) = o * delta;
+            }
+        }
+    }
+
+    // Update parameters
+    for (size_t i = 0; i < n.layer_count; i++) {
+        for (size_t j = 0; j < n.ws[i].rows; j++) {
+            for (size_t k = 0; k < n.ws[i].cols; k++) {
+                MAT_AT(n.ws[i], j, k) -= MAT_AT(n.g.ws[i], j, k) * learning_rate;
+            }
+        }
+    }
 }
 
 void net_forward(Network n)
@@ -257,8 +306,8 @@ void net_free(Network n)
 
 double net_loss(Network n, Matrix target)
 {
-    assert(NET_IN(n).rows == target.rows);
-    assert(NET_IN(n).cols == target.cols);
+    assert(NET_OUT(n).rows == target.rows);
+    assert(NET_OUT(n).cols == target.cols);
 
     net_forward(n);
 
@@ -291,7 +340,7 @@ void net_print(Network n)
     printf("\n");
 }
 
-void net_train(Network n, Matrix in, Matrix target)
+void net_train(Network n, Matrix in, Matrix target, double learning_rate)
 {
     assert(NET_IN(n).rows == in.rows);
     assert(NET_OUT(n).rows == target.rows);
@@ -299,7 +348,21 @@ void net_train(Network n, Matrix in, Matrix target)
     // Set the input data
     mat_copy(NET_IN(n), in);
 
+    // Forward pass
+    net_forward(n);
+
     // Call backprop()
+    net_backprop(n, target, learning_rate);
+}
+
+void net_zero_gradient(Network n)
+{
+    for (size_t i = 0; i < n.layer_count - 1; i++) {
+        mat_fill(n.g.ws[i], 0.0);
+        mat_fill(n.g.bs[i], 0.0);
+        mat_fill(n.g.as[i], 0.0);
+    }
+    mat_fill(n.g.as[n.layer_count - 1], 0.0);
 }
 
 #endif // ML_IMPLEMENTATION
