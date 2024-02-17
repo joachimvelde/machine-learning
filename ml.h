@@ -294,7 +294,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
     // Zero out the gradient
     net_zero_gradient(n);
 
-    // Calculate the deltas for the output neuros first
+    // Calculate the deltas for the output neurons first
     // delta = (o_j - t_j) * o_j * (1 - o_j)
     Matrix deltas = n.g.ds[n.layer_count - 1];
     Matrix one_minus_o = mat_sub_from_f(1, o);
@@ -305,11 +305,15 @@ void net_backprop(Network n, Matrix target, double learning_rate)
     mat_hadamard(deltas, deltas, one_minus_o);
     mat_free(one_minus_o);
 
-    // Gradient for the output layer
+    // Gradient for the weights in the output layer
     Matrix at = mat_transpose(n.as[n.layer_count - 2]);
     mat_mult(n.g.ws[n.layer_count - 2], n.g.ds[n.layer_count - 1], at);
     mat_scale(n.g.ws[n.layer_count - 2], learning_rate);
     mat_free(at);
+
+    // Gradient for the biases in the output layer
+    mat_copy(n.g.bs[n.layer_count - 2], n.g.ds[n.layer_count - 1]);
+    mat_scale(n.g.bs[n.layer_count - 2], learning_rate);
 
     // Iterate backwards through each layer to calculate deltas
     for (int i = n.layer_count - 3; i >= 0; i--) {
@@ -329,20 +333,19 @@ void net_backprop(Network n, Matrix target, double learning_rate)
 
         // Finalize gradients and scale by learning rate;
         Matrix at = mat_transpose(n.as[i]);
-
-        // printf("MULT ON %zu x %zu and %zu x %zu into %zu x %zu\n",
-        //        at.rows, at.cols, n.g.ds[i+1].rows, n.g.ds[i+1].cols,
-        //        n.g.ws[i].rows, n.g.ws[i].cols);
-
         mat_mult(n.g.ws[i], n.g.ds[i+1], at);
         mat_scale(n.g.ws[i], learning_rate);
-
         mat_free(at);
+
+        // For the biases
+        mat_copy(n.g.bs[i], n.g.ds[i+1]);
+        mat_scale(n.g.bs[i], learning_rate);
     } 
 
     // Update parameters
     for (size_t i = 0; i < n.layer_count - 1; i++) {
         mat_sub(n.ws[i], n.g.ws[i]);
+        mat_sub(n.bs[i], n.g.bs[i]);
     }
 }
 

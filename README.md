@@ -24,5 +24,7 @@ Don't allocate and copy for the input vectors, just change the pointer at as[0]
 * GPU-acceleration
 
 ## Bugs
-* Sometimes calling backprop a single time will actually make the loss greater. This could potentially be an issue with using too high of a learning rate, but I am not sure.
+* This was not actually a bug, I just forgot to set the input of the network
+before the first call to the loss function. Let this be a lesson.
+Sometimes calling backprop a single time will actually make the loss greater. This could potentially be an issue with using too high of a learning rate, but I am not sure.
 Maybe this is because I have not yet added the bias gradient to the backprop-function.
