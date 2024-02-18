@@ -1,14 +1,18 @@
 # AI/ML in C
 This is a private repository for exploring and implementing algorithms in AI/ML.
 
+## Runs
+For the whole MNIST dataset uploaded, a network with two hidden layers, with
+500 and 100 neurons and a learning rate of 0.01 gave an accuracy of 94 percent
+for the test set. The whole program, including reading the set, had a runtime
+of just under nine minutes.
+
+## Ramblings
 Note for your idiot brain: Even if the input of a layer is stored as a vector, the weights will still be stored in a matrix.
 Example: 5 inputs => triple neuron layer: 3x5 weight matrix and 3x1 bias vector.
 A = ø(W x I + b)
 
 Also, remember to seed srand!
-
-## TODO:
-* Add bias to backprop
 
 ## Future optimizations:
 Use memcpy where relevant: mat_copy and mat_fill

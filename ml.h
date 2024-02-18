@@ -24,7 +24,7 @@ void mat_copy(Matrix dst, Matrix src);
 void mat_fill(Matrix m, double x);
 void mat_flatten(Matrix *m);
 void mat_hadamard(Matrix dst, Matrix a, Matrix b);
-void mat_normalise(Matrix m); // Used to normalise the dataset
+void mat_normalise(Matrix m); // Could be used to normalise the dataset
 Matrix mat_transpose(Matrix m);
 void mat_rand(Matrix m, double min, double max);
 void mat_scale(Matrix m, double x);
