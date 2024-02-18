@@ -61,16 +61,13 @@ Network net_alloc(size_t layer_count, size_t layers[]);
 void net_backprop(Network n, Matrix target, double learning_rate);
 void net_forward(Network n);
 void net_free(Network n);
+void net_load(Network n, char *filename);
 double net_loss(Network n, Matrix target);
 void net_print(Network n);
+void net_save(Network n, char *filename);
 void net_train(Network n, Matrix in, Matrix target, double learning_rate);
 void net_zero_gradient(Network n);
 
-/* Make a train-function that accepts the input and expected output.
-   This function will have to be called for every forward/backprop.
-
-   Later improvenemt: Accept the whole dataset at initialization, and have the
-   train-function train the network on the dataset a given number of times */
 
 #endif // Ml_H_
 
@@ -415,6 +412,28 @@ void net_print(Network n)
         printf("%zu x %zu\n", n.bs[i].rows, n.bs[i].cols);
     }
     printf("\n");
+}
+
+void net_save(Network n, char *filename)
+{
+    FILE *f = fopen(filename, "wb");
+    if (f == NULL) {
+        perror("fopen failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Store the weights and biases consecutively for each layer
+    size_t written = 0;
+    for (size_t i = 0; i < n.layer_count - 1; i++) {
+        written = fwrite(n.ws[i].data, sizeof(double), n.ws[i].rows * n.ws[i].cols, f);
+        written += fwrite(n.bs[i].data, sizeof(double), n.bs[i].rows * n.bs[i].cols, f);
+        if (written != n.ws[i].rows * n.ws[i].cols + n.bs[i].rows * n.bs[i].cols) {
+            perror("fread failed while saving network");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    fclose(f);
 }
 
 void net_train(Network n, Matrix in, Matrix target, double learning_rate)

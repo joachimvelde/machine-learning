@@ -11,8 +11,6 @@ int swap_endian(int x)
 
 Matrix *read_labels(char *path, size_t N)
 {
-    srand(time(NULL));
-
     FILE *f = fopen(path, "rb"); // Should probably check this return value, though
     size_t ret = 0; // Just to get fewer warnings, these calls work 99% of the time
 
@@ -115,7 +113,9 @@ int mat_to_label(Matrix m)
 
 int main()
 {
-    size_t N = 60000;
+    srand(time(NULL));
+
+    size_t N = 1000;
 
     // Read the labels from the training set
     Matrix *labels = read_labels("datasets/train-labels-idx1-ubyte/train-labels.idx1-ubyte", N);
@@ -137,16 +137,16 @@ int main()
 
 
 
-    N = 10000;
+    size_t C = 10;
 
     // Read the labels from the test set - these dont need to be matrices, but I'm not writing another function
-    Matrix *test_labels = read_labels("datasets/t10k-labels-idx1-ubyte", N);
+    Matrix *test_labels = read_labels("datasets/t10k-labels-idx1-ubyte", C);
 
     // Read the images from the test set
-    Matrix *test_images = read_inputs("datasets/t10k-images-idx3-ubyte", N);
+    Matrix *test_images = read_inputs("datasets/t10k-images-idx3-ubyte", C);
 
     int correct_guesses = 0;
-    for (size_t i = 0; i < N; i++) {
+    for (size_t i = 0; i < C; i++) {
         // Set input
         mat_copy(NET_IN(n), test_images[i]);
         // Forward
@@ -160,13 +160,23 @@ int main()
     }
 
     printf("\nThe network guessed correctly %d out of %zu times. With an accuracy of %.2f percent\n.",
-           correct_guesses, N, (double) correct_guesses / (double) N * 100.0);
+           correct_guesses, N, (double) correct_guesses / (double) C * 100.0);
+
+    // Saving the weights and biases
+    // net_save(n, "weights_and_baises");
+
+    // Test the results of some inputs
+    
+    // Load the weights and biases back into the network
+
+    // Test on the same inputs and check if the output matrices are the same
+    
 
     net_free(n);
     free_data(labels, N);
     free_data(images, N);
-    free_data(test_labels, N);
-    free_data(test_images, N);
+    free_data(test_labels, C);
+    free_data(test_images, C);
     
     return 0;
 }
