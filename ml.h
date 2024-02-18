@@ -378,6 +378,27 @@ void net_free(Network n)
     free(n.g.ds);
 }
 
+void net_load(Network n, char *filename)
+{
+    FILE *f = fopen(filename, "rb");
+    if (f == NULL) {
+        perror("fopen failed");
+        exit(EXIT_FAILURE);
+    }
+
+    size_t read = 0;
+    for (size_t i = 0; i < n.layer_count - 1; i++) {
+        read = fread(n.ws[i].data, sizeof(double), n.ws[i].rows * n.ws[i].cols, f);
+        read += fread(n.bs[i].data, sizeof(double), n.bs[i].rows * n.bs[i].cols, f);
+        if (read != n.ws[i].rows * n.ws[i].cols + n.bs[i].rows * n.bs[i].cols) {
+            perror("fread failed while saving network");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    fclose(f);
+}
+
 double net_loss(Network n, Matrix target)
 {
     assert(NET_OUT(n).rows == target.rows);
@@ -428,7 +449,7 @@ void net_save(Network n, char *filename)
         written = fwrite(n.ws[i].data, sizeof(double), n.ws[i].rows * n.ws[i].cols, f);
         written += fwrite(n.bs[i].data, sizeof(double), n.bs[i].rows * n.bs[i].cols, f);
         if (written != n.ws[i].rows * n.ws[i].cols + n.bs[i].rows * n.bs[i].cols) {
-            perror("fread failed while saving network");
+            perror("fwrite failed while saving network");
             exit(EXIT_FAILURE);
         }
     }

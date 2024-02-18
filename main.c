@@ -115,7 +115,7 @@ int main()
 {
     srand(time(NULL));
 
-    size_t N = 1000;
+    size_t N = 10;
 
     // Read the labels from the training set
     Matrix *labels = read_labels("datasets/train-labels-idx1-ubyte/train-labels.idx1-ubyte", N);
@@ -163,13 +163,20 @@ int main()
            correct_guesses, N, (double) correct_guesses / (double) C * 100.0);
 
     // Saving the weights and biases
-    // net_save(n, "weights_and_baises");
+    char *wb_file = "weights_and_biases";
+    net_save(n, wb_file);
 
-    // Test the results of some inputs
+    // Test the results of some input
+    printf("After saving\n");
+    mat_print(NET_OUT(n));
     
     // Load the weights and biases back into the network
+    net_load(n, wb_file);
 
-    // Test on the same inputs and check if the output matrices are the same
+    // Test on the same input and check if the output matrices are the same
+    net_forward(n);
+    printf("With loaded params\n");
+    mat_print(NET_OUT(n));
     
 
     net_free(n);
