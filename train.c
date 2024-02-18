@@ -1,6 +1,9 @@
 #include "ml.h"
 
-// These functions are just copied from train.c - figure it out
+// Training and testing example for the MNIST dataset
+// This particular set's header is stored in big-endian format.
+// For little-endian computer the header must be flipped.
+
 int swap_endian(int x)
 {
     return ((x >> 24) & 0xFF) | ((x >> 8) & 0xFF00) | ((x << 8) & 0xFF0000) | ((x << 24) & 0xFF000000);
@@ -110,23 +113,40 @@ int mat_to_label(Matrix m)
 
 int main()
 {
-    // Initialize the network
+    srand(time(NULL));
+
+    size_t N = 60000;
+
+    // Read the labels from the training set
+    Matrix *labels = read_labels("datasets/train-labels-idx1-ubyte/train-labels.idx1-ubyte", N);
+
+    // Read the images from the training set
+    Matrix *images = read_inputs("datasets/train-images-idx3-ubyte/train-images.idx3-ubyte", N);
+
+    // Create the network and train it
+    double learning_rate = 0.01;
+    size_t epochs = 10;
     size_t arch[] = { 28*28, 500, 100, 10 };
     Network n = net_alloc(sizeof(arch)/sizeof(size_t), arch);
+    for (size_t i = 0; i < epochs; i++) {
+        for (size_t j = 0; j < N; j++) {
+            net_train(n, images[j], labels[j], learning_rate);
+            printf("\rEpoch %zu of %zu", i+1, epochs); fflush(stdout); // Print the progress
+        }
+    }
 
-    // Load the weights and biases
-    net_load(n, "weights_and_biases");
 
-    size_t N = 10000;
 
-    // Read the labels from the test set
-    Matrix *test_labels = read_labels("datasets/t10k-labels-idx1-ubyte", N);
+    size_t C = 10000;
+
+    // Read the labels from the test set - these dont need to be matrices, but I'm not writing another function
+    Matrix *test_labels = read_labels("datasets/t10k-labels-idx1-ubyte", C);
 
     // Read the images from the test set
-    Matrix *test_images = read_inputs("datasets/t10k-images-idx3-ubyte", N);
+    Matrix *test_images = read_inputs("datasets/t10k-images-idx3-ubyte", C);
 
     int correct_guesses = 0;
-    for (size_t i = 0; i < N; i++) {
+    for (size_t i = 0; i < C; i++) {
         // Set input
         mat_copy(NET_IN(n), test_images[i]);
         // Forward
@@ -140,12 +160,18 @@ int main()
     }
 
     printf("\nThe network guessed correctly %d out of %zu times. With an accuracy of %.2f percent\n.",
-           correct_guesses, N, (double) correct_guesses / (double) N * 100.0);
+           correct_guesses, C, (double) correct_guesses / (double) C * 100.0);
+
+    // Save the weights and biases
+    net_save(n, "weights_and_biases");
+    
 
     // Free everything
     net_free(n);
-    free_data(test_labels, N);
-    free_data(test_images, N);
-
+    free_data(labels, N);
+    free_data(images, N);
+    free_data(test_labels, C);
+    free_data(test_images, C);
+    
     return 0;
 }
