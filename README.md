@@ -5,7 +5,8 @@ This is a private repository for exploring and implementing algorithms in AI/ML.
 For the whole MNIST dataset uploaded, a network with two hidden layers, with
 500 and 100 neurons and a learning rate of 0.01 gave an accuracy of 94 percent
 for the test set. The whole program, including reading the set, had a runtime
-of just under nine minutes.
+of just under nine minutes. Lowering the learning rate to 0.001 also lowered the
+accuracy by about ten percent.
 
 ## Ramblings
 Note for your idiot brain: Even if the input of a layer is stored as a vector, the weights will still be stored in a matrix.

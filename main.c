@@ -159,7 +159,7 @@ int main()
         }
     }
 
-    printf("The network guessed correctly %d out of %zu times. With an accuracy of %.2f percent\n.",
+    printf("\nThe network guessed correctly %d out of %zu times. With an accuracy of %.2f percent\n.",
            correct_guesses, N, (double) correct_guesses / (double) N * 100.0);
 
     net_free(n);
