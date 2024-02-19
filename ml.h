@@ -13,42 +13,43 @@ double sigmoid(double x);
 
 #define MAT_AT(m, i, j) m.data[m.cols * (i) + (j)]
 
-typedef struct Matrix
+// Matrix conflicted with a type in raylib, so I had to change the name
+typedef struct Mat
 {
     size_t rows, cols;
     double *data;
-} Matrix;
+} Mat;
 
-Matrix mat_alloc(size_t rows, size_t cols);
-void mat_copy(Matrix dst, Matrix src);
-void mat_fill(Matrix m, double x);
-void mat_flatten(Matrix *m);
-void mat_hadamard(Matrix dst, Matrix a, Matrix b);
-void mat_normalise(Matrix m); // Could be used to normalise the dataset
-Matrix mat_transpose(Matrix m);
-void mat_rand(Matrix m, double min, double max);
-void mat_scale(Matrix m, double x);
-void mat_sigmoid(Matrix m);
-void mat_sub(Matrix dst, Matrix m);
-Matrix mat_sub_from_f(double x, Matrix m); // Allocates a new matrix with values x - m
-void mat_sum(Matrix dst, Matrix m);
-void mat_mult(Matrix dst, Matrix a, Matrix b);
-void mat_print(Matrix m);
-void mat_free(Matrix m);
+Mat mat_alloc(size_t rows, size_t cols);
+void mat_copy(Mat dst, Mat src);
+void mat_fill(Mat m, double x);
+void mat_flatten(Mat *m);
+void mat_hadamard(Mat dst, Mat a, Mat b);
+void mat_normalise(Mat m); // Could be used to normalise the dataset
+Mat mat_transpose(Mat m);
+void mat_rand(Mat m, double min, double max);
+void mat_scale(Mat m, double x);
+void mat_sigmoid(Mat m);
+void mat_sub(Mat dst, Mat m);
+Mat mat_sub_from_f(double x, Mat m); // Allocates a new matrix with values x - m
+void mat_sum(Mat dst, Mat m);
+void mat_mult(Mat dst, Mat a, Mat b);
+void mat_print(Mat m);
+void mat_free(Mat m);
 
 typedef struct Gradient
 {
-    Matrix *ws;
-    Matrix *bs;
-    Matrix *ds; // Deltas
+    Mat *ws;
+    Mat *bs;
+    Mat *ds; // Deltas
 } Gradient;
 
 typedef struct Network
 {
     size_t layer_count; // Should include the input layer
-    Matrix *ws; // Weights
-    Matrix *bs; // Biases
-    Matrix *as; // Activations
+    Mat *ws; // Weights
+    Mat *bs; // Biases
+    Mat *as; // Activations
     Gradient g;
 } Network;
 
@@ -58,14 +59,14 @@ typedef struct Network
 
 // The layers array should specify the number of neurons in each layer
 Network net_alloc(size_t layer_count, size_t layers[]);
-void net_backprop(Network n, Matrix target, double learning_rate);
+void net_backprop(Network n, Mat target, double learning_rate);
 void net_forward(Network n);
 void net_free(Network n);
 void net_load(Network n, char *filename);
-double net_loss(Network n, Matrix target);
+double net_loss(Network n, Mat target);
 void net_print(Network n);
 void net_save(Network n, char *filename);
-void net_train(Network n, Matrix in, Matrix target, double learning_rate);
+void net_train(Network n, Mat in, Mat target, double learning_rate);
 void net_zero_gradient(Network n);
 
 
@@ -82,15 +83,15 @@ double sigmoid(double x)
 
 // A good few of these functions could be optimized by applying loop collapsing
 
-Matrix mat_alloc(size_t rows, size_t cols)
+Mat mat_alloc(size_t rows, size_t cols)
 {
     double *data = (double *) calloc(rows * cols, sizeof(double));
     assert(data != NULL);
-    Matrix m = { .rows = rows, .cols = cols, .data = data };
+    Mat m = { .rows = rows, .cols = cols, .data = data };
     return m;
 }
 
-void mat_copy(Matrix dst, Matrix src)
+void mat_copy(Mat dst, Mat src)
 {
     assert(dst.rows == src.rows);
     assert(dst.cols == src.cols);
@@ -102,7 +103,7 @@ void mat_copy(Matrix dst, Matrix src)
     }
 }
 
-void mat_fill(Matrix m, double x)
+void mat_fill(Mat m, double x)
 {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -111,13 +112,13 @@ void mat_fill(Matrix m, double x)
     }
 }
 
-void mat_flatten(Matrix *m)
+void mat_flatten(Mat *m)
 {
     m->rows = m->rows * m->cols;
     m->cols = 1;
 }
 
-void mat_hadamard(Matrix dst, Matrix a, Matrix b)
+void mat_hadamard(Mat dst, Mat a, Mat b)
 {
     assert(dst.rows == a.rows);
     assert(dst.rows == b.rows);
@@ -133,9 +134,9 @@ void mat_hadamard(Matrix dst, Matrix a, Matrix b)
     }
 }
 
-Matrix mat_transpose(Matrix m)
+Mat mat_transpose(Mat m)
 {
-    Matrix new = mat_alloc(m.cols, m.rows);
+    Mat new = mat_alloc(m.cols, m.rows);
     
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -146,7 +147,7 @@ Matrix mat_transpose(Matrix m)
     return new;
 }
 
-void mat_rand(Matrix m, double min, double max)
+void mat_rand(Mat m, double min, double max)
 {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -155,7 +156,7 @@ void mat_rand(Matrix m, double min, double max)
     }
 }
 
-void mat_scale(Matrix m, double x)
+void mat_scale(Mat m, double x)
 {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -164,14 +165,14 @@ void mat_scale(Matrix m, double x)
     }
 }
 
-void mat_sigmoid(Matrix m)
+void mat_sigmoid(Mat m)
 {
     for (size_t i = 0; i < m.rows * m.cols; i++) {
         m.data[i] = sigmoid(m.data[i]);
     }
 }
 
-void mat_sub(Matrix dst, Matrix m)
+void mat_sub(Mat dst, Mat m)
 {
     assert(dst.rows == m.rows);
     assert(dst.cols == m.cols);
@@ -183,9 +184,9 @@ void mat_sub(Matrix dst, Matrix m)
     }
 }
 
-Matrix mat_sub_from_f(double x, Matrix m)
+Mat mat_sub_from_f(double x, Mat m)
 {
-    Matrix new = mat_alloc(m.rows, m.cols);
+    Mat new = mat_alloc(m.rows, m.cols);
 
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -196,7 +197,7 @@ Matrix mat_sub_from_f(double x, Matrix m)
     return new;
 }
 
-void mat_sum(Matrix dst, Matrix m)
+void mat_sum(Mat dst, Mat m)
 {
     assert(dst.rows == m.rows);
     assert(dst.cols == m.cols);
@@ -209,7 +210,7 @@ void mat_sum(Matrix dst, Matrix m)
 }
 
 // Optimize this for cache hits
-void mat_mult(Matrix dst, Matrix a, Matrix b)
+void mat_mult(Mat dst, Mat a, Mat b)
 {
     assert(a.cols == b.rows);
     assert(dst.rows == a.rows);
@@ -225,7 +226,7 @@ void mat_mult(Matrix dst, Matrix a, Matrix b)
     }
 }
 
-void mat_print(Matrix m)
+void mat_print(Mat m)
 {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -236,7 +237,7 @@ void mat_print(Matrix m)
     printf("\n");
 }
 
-void mat_free(Matrix m)
+void mat_free(Mat m)
 {
     free(m.data);
 }
@@ -249,15 +250,15 @@ Network net_alloc(size_t layer_count, size_t layers[])
     n.layer_count = layer_count;
 
     // Allocate arrays for parameters
-    n.ws = (Matrix *) malloc(sizeof(*n.ws) * (n.layer_count - 1));
-    n.bs = (Matrix *) malloc(sizeof(*n.bs) * (n.layer_count - 1));
-    n.as = (Matrix *) malloc(sizeof(*n.as) * n.layer_count);
+    n.ws = (Mat *) malloc(sizeof(*n.ws) * (n.layer_count - 1));
+    n.bs = (Mat *) malloc(sizeof(*n.bs) * (n.layer_count - 1));
+    n.as = (Mat *) malloc(sizeof(*n.as) * n.layer_count);
     assert(n.ws != NULL && n.bs != NULL && n.as != NULL);
 
     // Allocate arrays for the gradient
-    n.g.ws = (Matrix *) malloc(sizeof(*n.g.ws) * (n.layer_count - 1));
-    n.g.bs = (Matrix *) malloc(sizeof(*n.g.bs) * (n.layer_count - 1));
-    n.g.ds = (Matrix *) malloc(sizeof(*n.g.ds) * n.layer_count);
+    n.g.ws = (Mat *) malloc(sizeof(*n.g.ws) * (n.layer_count - 1));
+    n.g.bs = (Mat *) malloc(sizeof(*n.g.bs) * (n.layer_count - 1));
+    n.g.ds = (Mat *) malloc(sizeof(*n.g.ds) * n.layer_count);
     assert(n.g.ws != NULL && n.g.bs != NULL && n.g.ds != NULL);
 
     // Allocate and initialize architecture
@@ -280,21 +281,21 @@ Network net_alloc(size_t layer_count, size_t layers[])
 }
 
 // Check the wikipedia page for backpropagation for further explanation
-void net_backprop(Network n, Matrix target, double learning_rate)
+void net_backprop(Network n, Mat target, double learning_rate)
 {
     // Remember that the first matrix in n.as and g.ds is the input layer
     // This should probably be removed for g.ds, but we will do that later.
     // This means the current activation matrix at an index is as[i+1], not as[i].
 
-    Matrix o = NET_OUT(n);
+    Mat o = NET_OUT(n);
 
     // Zero out the gradient
     net_zero_gradient(n);
 
     // Calculate the deltas for the output neurons first
     // delta = (o_j - t_j) * o_j * (1 - o_j)
-    Matrix deltas = n.g.ds[n.layer_count - 1];
-    Matrix one_minus_o = mat_sub_from_f(1, o);
+    Mat deltas = n.g.ds[n.layer_count - 1];
+    Mat one_minus_o = mat_sub_from_f(1, o);
 
     mat_copy(deltas, o);
     mat_sub(deltas, target);
@@ -303,7 +304,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
     mat_free(one_minus_o);
 
     // Gradient for the weights in the output layer
-    Matrix at = mat_transpose(n.as[n.layer_count - 2]);
+    Mat at = mat_transpose(n.as[n.layer_count - 2]);
     mat_mult(n.g.ws[n.layer_count - 2], n.g.ds[n.layer_count - 1], at);
     mat_scale(n.g.ws[n.layer_count - 2], learning_rate);
     mat_free(at);
@@ -315,10 +316,10 @@ void net_backprop(Network n, Matrix target, double learning_rate)
     // Iterate backwards through each layer to calculate deltas
     for (int i = n.layer_count - 3; i >= 0; i--) {
         // delta = sum_l_in_L(w_jl * delta_l) * o_j * (1 - o_j)
-        Matrix wt = mat_transpose(n.ws[i+1]);
-        Matrix one_minus_o = mat_sub_from_f(1, n.as[i+1]);
+        Mat wt = mat_transpose(n.ws[i+1]);
+        Mat one_minus_o = mat_sub_from_f(1, n.as[i+1]);
 
-        Matrix delta_next = n.g.ds[i+2]; // Delta from next layer
+        Mat delta_next = n.g.ds[i+2]; // Delta from next layer
         deltas = n.g.ds[i+1];
 
         mat_mult(deltas, wt, delta_next);
@@ -329,7 +330,7 @@ void net_backprop(Network n, Matrix target, double learning_rate)
         mat_free(one_minus_o);
 
         // Finalize gradients and scale by learning rate;
-        Matrix at = mat_transpose(n.as[i]);
+        Mat at = mat_transpose(n.as[i]);
         mat_mult(n.g.ws[i], n.g.ds[i+1], at);
         mat_scale(n.g.ws[i], learning_rate);
         mat_free(at);
@@ -399,7 +400,7 @@ void net_load(Network n, char *filename)
     fclose(f);
 }
 
-double net_loss(Network n, Matrix target)
+double net_loss(Network n, Mat target)
 {
     assert(NET_OUT(n).rows == target.rows);
     assert(NET_OUT(n).cols == target.cols);
@@ -457,7 +458,7 @@ void net_save(Network n, char *filename)
     fclose(f);
 }
 
-void net_train(Network n, Matrix in, Matrix target, double learning_rate)
+void net_train(Network n, Mat in, Mat target, double learning_rate)
 {
     assert(NET_IN(n).rows == in.rows);
     assert(NET_OUT(n).rows == target.rows);

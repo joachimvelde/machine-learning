@@ -8,7 +8,7 @@ endif
 
 # CFLAGS = -O2 -Wall -Wextra -std=c11
 CFLAGS = -O2 -std=c11
-LDFLAGS = -lm
+LDFLAGS = -lm -lraylib -lGL -lpthread -ldl -lrt -lX11
 TARGET = main
 OBJ = main.o
 TRAIN_OBJ = train.o

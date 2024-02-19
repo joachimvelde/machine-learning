@@ -9,12 +9,12 @@ int swap_endian(int x)
     return ((x >> 24) & 0xFF) | ((x >> 8) & 0xFF00) | ((x << 8) & 0xFF0000) | ((x << 24) & 0xFF000000);
 }
 
-Matrix *read_labels(char *path, size_t N)
+Mat *read_labels(char *path, size_t N)
 {
     FILE *f = fopen(path, "rb"); // Should probably check this return value, though
     size_t ret = 0; // Just to get fewer warnings, these calls work 99% of the time
 
-    Matrix *labels = malloc(N*sizeof(Matrix));
+    Mat *labels = malloc(N*sizeof(Mat));
 
     // Read the magic number
     int magic = 0;
@@ -31,7 +31,7 @@ Matrix *read_labels(char *path, size_t N)
         unsigned char label;
         ret = fread(&label, sizeof(char), 1, f);
 
-        Matrix l_matrix = mat_alloc(10, 1);
+        Mat l_matrix = mat_alloc(10, 1);
         MAT_AT(l_matrix, (size_t) label, 0) = 1.0;
 
         labels[i] = l_matrix;
@@ -42,12 +42,12 @@ Matrix *read_labels(char *path, size_t N)
     return labels;
 }
 
-Matrix *read_inputs(char *path, size_t N)
+Mat *read_inputs(char *path, size_t N)
 {
     FILE *f = fopen(path, "rb");
     size_t ret = 0;
 
-    Matrix *inputs = malloc(N*sizeof(Matrix));
+    Mat *inputs = malloc(N*sizeof(Mat));
 
     // Read magic number
     int magic = 0;
@@ -71,7 +71,7 @@ Matrix *read_inputs(char *path, size_t N)
 
     // Read the images
     for (size_t i = 0; i < N && i < (size_t) num_items; i++) {
-        Matrix image = mat_alloc(rows, cols);
+        Mat image = mat_alloc(rows, cols);
         for (size_t i = 0; i < (size_t) rows; i++) {
             for (size_t j = 0; j < (size_t) cols; j++) {
                 unsigned char pixel = 0;
@@ -88,7 +88,7 @@ Matrix *read_inputs(char *path, size_t N)
     return inputs;
 }
 
-void free_data(Matrix *data, size_t N)
+void free_data(Mat *data, size_t N)
 {
     for (size_t i = 0; i < N; i++) {
         mat_free(data[i]);
@@ -96,7 +96,7 @@ void free_data(Matrix *data, size_t N)
     free(data);
 }
 
-int mat_to_label(Matrix m)
+int mat_to_label(Mat m)
 {
     int label = 0;
     double max = 0.0;
@@ -118,10 +118,10 @@ int main()
     size_t N = 60000;
 
     // Read the labels from the training set
-    Matrix *labels = read_labels("datasets/train-labels-idx1-ubyte/train-labels.idx1-ubyte", N);
+    Mat *labels = read_labels("datasets/train-labels-idx1-ubyte/train-labels.idx1-ubyte", N);
 
     // Read the images from the training set
-    Matrix *images = read_inputs("datasets/train-images-idx3-ubyte/train-images.idx3-ubyte", N);
+    Mat *images = read_inputs("datasets/train-images-idx3-ubyte/train-images.idx3-ubyte", N);
 
     // Create the network and train it
     double learning_rate = 0.01;
@@ -140,10 +140,10 @@ int main()
     size_t C = 10000;
 
     // Read the labels from the test set - these dont need to be matrices, but I'm not writing another function
-    Matrix *test_labels = read_labels("datasets/t10k-labels-idx1-ubyte", C);
+    Mat *test_labels = read_labels("datasets/t10k-labels-idx1-ubyte", C);
 
     // Read the images from the test set
-    Matrix *test_images = read_inputs("datasets/t10k-images-idx3-ubyte", C);
+    Mat *test_images = read_inputs("datasets/t10k-images-idx3-ubyte", C);
 
     int correct_guesses = 0;
     for (size_t i = 0; i < C; i++) {
