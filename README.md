@@ -16,11 +16,11 @@ A = ø(W x I + b)
 Also, remember to seed srand!
 
 ## Future optimizations:
+Try to parallelise mat_mult, mat_sum and mat_hadamard
+
 Use memcpy where relevant: mat_copy and mat_fill
 
-Apply loop fusion to most of the matrix loops - should be relatively easy
-
-Apply loop unrolling and/or unroll and jam
+Try to apply some loop optimizations, like loop fusion
 
 Don't allocate and copy for the input vectors, just change the pointer at as[0]
 
