@@ -1,6 +1,14 @@
 # AI/ML in C
 This is a repository for exploring and implementing algorithms in AI/ML.
 
+Currently, running train will train and test the network on the MNITS
+dataset. The parameters will be stored in a binary file which will be loaded
+when running main. The main binary will open a window in raylib, where the user
+can draw digits. Right click clears the window. Press space to have the network guess which digit the user has
+drawn. The results will be printed to the terminal.
+
+[Add a gif/video showing the network guessing a hand drawn digit]
+
 ## Runs
 For the whole MNIST dataset uploaded, a network with two hidden layers, with
 500 and 100 neurons and a learning rate of 0.01 gave an accuracy of 94 percent
@@ -22,3 +30,7 @@ Don't allocate and copy for the input vectors, just change the pointer at as[0]
 ## Things to look into:
 * Batch processing
 * GPU-acceleration
+
+## Bugs
+* The initialised raylib window displays garbage, but this can be fixed by a
+simple right click.
