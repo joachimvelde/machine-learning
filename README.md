@@ -4,7 +4,7 @@ This is a repository for exploring and implementing algorithms in AI/ML.
 Currently, running train will train and test the network on the MNITS
 dataset. The parameters will be stored in a binary file which will be loaded
 when running main. The main binary will open a window in raylib, where the user
-can draw digits. Right click clears the window. Press space to have the network guess which digit the user has
+can draw digits. Right click clears the window. Press space to have the network guess which digit has been
 drawn. The results will be printed to the terminal.
 
 [Add a gif/video showing the network guessing a hand drawn digit]
