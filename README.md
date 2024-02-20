@@ -34,3 +34,7 @@ Don't allocate and copy for the input vectors, just change the pointer at as[0]
 ## Bugs
 * The initialised raylib window displays garbage, but this can be fixed by a
 simple right click.
+
+
+
+The MNIST-dataset was downloaded from [this website.](http://yann.lecun.com/exdb/mnist/)
