@@ -25,7 +25,6 @@ void mat_copy(Mat dst, Mat src);
 void mat_fill(Mat m, double x);
 void mat_flatten(Mat *m);
 void mat_hadamard(Mat dst, Mat a, Mat b);
-void mat_normalise(Mat m); // Could be used to normalise the dataset
 Mat mat_transpose(Mat m);
 void mat_rand(Mat m, double min, double max);
 void mat_scale(Mat m, double x);
@@ -81,7 +80,7 @@ double sigmoid(double x)
 }
 
 
-// A good few of these functions could be optimized by applying loop collapsing
+// Try to optimise some of these
 
 Mat mat_alloc(size_t rows, size_t cols)
 {
@@ -209,7 +208,7 @@ void mat_sum(Mat dst, Mat m)
     }
 }
 
-// Optimize this for cache hits
+// Try to parallelise this?
 void mat_mult(Mat dst, Mat a, Mat b)
 {
     assert(a.cols == b.rows);
@@ -392,7 +391,7 @@ void net_load(Network n, char *filename)
         read = fread(n.ws[i].data, sizeof(double), n.ws[i].rows * n.ws[i].cols, f);
         read += fread(n.bs[i].data, sizeof(double), n.bs[i].rows * n.bs[i].cols, f);
         if (read != n.ws[i].rows * n.ws[i].cols + n.bs[i].rows * n.bs[i].cols) {
-            perror("fread failed while saving network");
+            perror("fread failed while loading network");
             exit(EXIT_FAILURE);
         }
     }
@@ -469,7 +468,7 @@ void net_train(Network n, Mat in, Mat target, double learning_rate)
     // Forward pass
     net_forward(n);
 
-    // Call backprop()
+    // Backprop
     net_backprop(n, target, learning_rate);
 }
 

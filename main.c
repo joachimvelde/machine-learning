@@ -94,7 +94,6 @@ void free_data(Mat *data, size_t N)
     free(data);
 }
 
-// Check the accuracy as well - how sure was the network?
 int mat_to_label(Mat m, double *confidence)
 {
     int label = 0;
