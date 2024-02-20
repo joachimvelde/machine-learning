@@ -132,7 +132,7 @@ Mat downscale(Mat m)
     return d;
 }
 
-int classify_drawing(Network n, Mat image)
+void classify_drawing(Network n, Mat image)
 {
     Mat input = downscale(image);
     mat_flatten(&input);
