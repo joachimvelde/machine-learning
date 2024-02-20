@@ -125,8 +125,8 @@ int main()
 
     // Create the network and train it
     double learning_rate = 0.01;
-    size_t epochs = 10;
-    size_t arch[] = { 28*28, 500, 100, 10 };
+    size_t epochs = 20;
+    size_t arch[] = { 28*28, 1000, 100, 10 };
     Network n = net_alloc(sizeof(arch)/sizeof(size_t), arch);
     for (size_t i = 0; i < epochs; i++) {
         for (size_t j = 0; j < N; j++) {

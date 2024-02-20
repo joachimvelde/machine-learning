@@ -1,7 +1,7 @@
 #include "ml.h"
 #include "raylib.h"
 
-// These functions are just copied from train.c - figure it out
+// These functions are just copied from train.c - Make a header file instead
 int swap_endian(int x)
 {
     return ((x >> 24) & 0xFF) | ((x >> 8) & 0xFF00) | ((x << 8) & 0xFF0000) | ((x << 24) & 0xFF000000);
@@ -94,7 +94,8 @@ void free_data(Mat *data, size_t N)
     free(data);
 }
 
-int mat_to_label(Mat m)
+// Check the accuracy as well - how sure was the network?
+int mat_to_label(Mat m, double *confidence)
 {
     int label = 0;
     double max = 0.0;
@@ -106,6 +107,7 @@ int mat_to_label(Mat m)
         }
     }
 
+    *confidence = max;
     return label;
 }
 
@@ -131,16 +133,17 @@ Mat downscale(Mat m)
     return d;
 }
 
-// Check if 255 is black or white
 int classify_drawing(Network n, Mat image)
 {
     Mat input = downscale(image);
     mat_flatten(&input);
     mat_copy(NET_IN(n), input);
     net_forward(n);
-    int guess = mat_to_label(NET_OUT(n));
 
-    printf("The neural network guessed: %d\n", guess);
+    double confidence = 0.0;
+    int guess = mat_to_label(NET_OUT(n), &confidence);
+
+    printf("The neural network guessed: %d, with a confidence of %.2f percent.\n", guess, confidence * 100.0);
 
     mat_free(input);
 }
@@ -152,7 +155,7 @@ int main()
 
 
     // Initialize the network
-    size_t arch[] = { 28*28, 500, 100, 10 };
+    size_t arch[] = { 28*28, 1000, 100, 10 };
     Network n = net_alloc(sizeof(arch)/sizeof(size_t), arch);
 
     // Load the weights and biases
@@ -173,7 +176,6 @@ int main()
     {
         Vector2 mouse = GetMousePosition();
         
-        // Use some hack to be able to get pixel values from the frame
         BeginTextureMode(target);
 
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
