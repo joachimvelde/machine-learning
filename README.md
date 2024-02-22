@@ -1,7 +1,7 @@
 # AI/ML in C
 This is a repository for exploring and implementing algorithms in AI/ML.
 
-Currently, running train will train and test the network on the MNITS
+Currently, running train will train and test the network on the MNIST
 dataset. The parameters will be stored in a binary file which will be loaded
 when running main. The main binary will open a window in raylib, where the user
 can draw digits. Right click clears the window. Press space to have the network guess which digit has been
