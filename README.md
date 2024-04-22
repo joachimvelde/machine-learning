@@ -12,7 +12,8 @@ The main binary will open a window in raylib, where the usercan draw digits. Rig
 Press space to have the network guess which digit has been drawn. The results will be printed to the terminal.
 
 
-https://github.com/joachimvelde/machine-learning/assets/42566158/b02632a9-cc99-4442-a915-167b8adbde5e
+
+https://github.com/joachimvelde/machine-learning/assets/42566158/a51431ef-e576-4db0-925f-2aa8b513c2d9
 
 
 
