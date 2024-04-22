@@ -4,7 +4,8 @@ This is a repository for exploring and implementing algorithms in AI/ML.
 The networks uses the sigmoid activation function, and there are many potential
 improvements that could be made. Classifying images is a task better suited for
 convolutional neural networks, and ReLU would be interesting to test and compare to the sigmoid.
-This program is also single-threaded and only runs on the CPU. Utilizing the GPU would likelygive much shorter runtimes.
+This program is also single-threaded and only runs on the CPU. Utilizing the GPU would likely give much shorter runtimes.
+Better processing of the input, like centering and scaling, would probably help a lot as well.
 
 Currently, running train will train and test the network on the MNIST dataset.
 The parameters will be stored in a binary file which will be loaded when running main.
