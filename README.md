@@ -9,9 +9,12 @@ This program is also single-threaded and only runs on the CPU. Utilizing the GPU
 Currently, running train will train and test the network on the MNIST dataset.
 The parameters will be stored in a binary file which will be loaded when running main.
 The main binary will open a window in raylib, where the usercan draw digits. Right click clears the window.
-Press space to have the network guess which digit has beendrawn. The results will be printed to the terminal.
+Press space to have the network guess which digit has been drawn. The results will be printed to the terminal.
 
-<video src='https://github.com/joachimvelde/machine-learning/blob/main/demo.mp4' width=180/>
+
+https://github.com/joachimvelde/machine-learning/assets/42566158/b02632a9-cc99-4442-a915-167b8adbde5e
+
+
 
 ## Runs
 For the whole MNIST dataset uploaded, a network with two hidden layers, with
