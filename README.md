@@ -11,7 +11,7 @@ The parameters will be stored in a binary file which will be loaded when running
 The main binary will open a window in raylib, where the usercan draw digits. Right click clears the window.
 Press space to have the network guess which digit has beendrawn. The results will be printed to the terminal.
 
-<video src='demo.mp4' width=180/>
+<video src='./demo.mp4' width=180/>
 
 ## Runs
 For the whole MNIST dataset uploaded, a network with two hidden layers, with
