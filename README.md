@@ -11,9 +11,10 @@ The parameters will be stored in a binary file which will be loaded when running
 The main binary will open a window in raylib, where the usercan draw digits. Right click clears the window.
 Press space to have the network guess which digit has beendrawn. The results will be printed to the terminal.
 
-![Video showcasing the program](./demo.mp4)
+<video src='demo.mp4' width=180/>
 
-## RunsFor the whole MNIST dataset uploaded, a network with two hidden layers, with
+## Runs
+For the whole MNIST dataset uploaded, a network with two hidden layers, with
 500 and 100 neurons and a learning rate of 0.01 gave an accuracy of 94 percentfor the test set.
 The whole program, including reading the set, had a runtimeof just under nine minutes.
 Lowering the learning rate to 0.001 also lowered theaccuracy by about ten percent.
